@@ -1,0 +1,26 @@
+Short-Term:
+	2. Finish implementing menus:
+		d. add tab icons
+		z. duplicate all for mac and linux
+	4. make menu func map[0] only default in window class
+	6. Put mutex lock on accessing scene data.
+
+Long-Term:
+	1. Put dependencies in readme.
+	3. Edit shader class to have shaders in .h files and import from text.
+	6. implement shader slice class for fragment and vertex shaders and theree text data.
+	12. Make window pointer shared.
+	13. make camera inherit from obj3D
+	14. make shader and tecture tools
+	15. clean code check
+	16. make perspective matrix in renderer use screen size instead of constant
+	17. use namespace in src files
+	18. stop copying meshes to renderer
+	19. move buffer clear out of renderer::background
+	20. does renderer free its rendered obj.
+	21. check virtuals for components.
+	22. make shaders do normalizing of coordinates.
+	23. renderer should check if current context is set before rendering.
+
+Notes: 
+tab separators can be added to the top level menu but are not displayed
