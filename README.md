@@ -1,13 +1,15 @@
-﻿# software-engine
- <p>We have a <a href="https://trello.com/b/nJ8ITIK7/software-engine-swe">trello board</a> with all our current milestones.</p>
+<h1>software-engine</h1>
+<h3>Dependincies</h3>
+<ul>
+	<li>glad</li>
+	<li>GLFW3</li>
+	<li>GLFW3native</li>
+	<li>GLM</li>
+	<li>STB</li>
+	<li>FREETYPE</li>
+</ul>
 
-# Dependincies
-glad
-GLFW3
-GLFW3native
-GLM
-STB
-FREETYPE
+<p>We have a <a href="https://trello.com/b/nJ8ITIK7/software-engine-swe">trello board</a> with all our current milestones.</p>
 
 # TO-DO
 Tomorrow:
