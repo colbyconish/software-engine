@@ -1,5 +1,5 @@
 ﻿# software-engine
- <p>We have a <a href="https://trello.com/b/nJ8ITIK7/software-engine-swe" target="_blank">trello board</a> with all our current milestones.</p>
+ <p>We have a <a href="https://trello.com/b/nJ8ITIK7/software-engine-swe">trello board</a> with all our current milestones.</p>
 
 # Dependincies
 glad
