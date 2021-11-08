@@ -4,19 +4,26 @@
 namespace swe
 {
     Object::Object(glm::vec3 pos, glm::vec3 rot, glm::vec3 s)
-        : position(pos), rotation(rot), scale(s), aContainer(false), ID(num_objects++)
+        : position(pos), rotation(rot), scale(s)
     {
     }
 
     Object::~Object() {}
 
+    void Object::update() {}
+
+    object_ptr Object::createObject(glm::vec3 pos, glm::vec3 rot, glm::vec3 s)
+    {
+        return object_ptr(new Object(pos, rot, s));
+    }
+
     int Object::addComponent(std::shared_ptr<Component> comp)
     {
-        if (!(getComponent<Component>(comp->type) == nullptr))
+        /*if (!(getComponent<Component>() == nullptr))
         {
             std::cout << "Object already has this type of component." << std::endl;
             return 1;
-        }
+        }*/
 
         components.push_back(comp);
         return 0;
@@ -33,8 +40,4 @@ namespace swe
 
         return model;
     }
-
-    bool Object::isUI() { return false; }
-
-    bool Object::isContainer() { return aContainer; }
 } // END namespace swe

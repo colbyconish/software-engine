@@ -1,17 +1,24 @@
 #include "pch.h"
 #include "SWE/SWE.h"
 
+#define POV 45.0f
 
 namespace swe
 {
-    Mesh::Mesh(std::vector<Vertex> verts, std::vector<unsigned int> indis, Texture text)
-        : vertices(verts), indices(indis), texture(text)
+    Mesh::Mesh(std::vector<Vertex> verts, std::vector<unsigned int> indis, Texture texture)
+        : vertices(verts), indices(indis), texture(texture)
     {
         generateBuffers();
     }
 
+    mesh_ptr Mesh::createMesh(std::vector<Vertex> verts, std::vector<uint32_t> indis, Texture texture)
+    {
+        return mesh_ptr(new Mesh(verts, indis, texture));
+    }
+
     void Mesh::generateBuffers()
     {
+        //initGLAD();
         glGenVertexArrays(1, &VAO);
 
         unsigned int VBO;
@@ -24,7 +31,7 @@ namespace swe
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), &indices[0], GL_STATIC_DRAW);
 
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)0);
         glEnableVertexAttribArray(0);
@@ -40,25 +47,16 @@ namespace swe
         glDeleteBuffers(1, &EBO);
     }
 
-    size_t Mesh::getNumIndis()
+    void Mesh::draw(Dimensions windowSize, Shader &shader, glm::mat4 model, glm::mat4 view) const
     {
-        return indices.size();
-    }
-
-    size_t Mesh::getNumVerts()
-    {
-        return vertices.size();
-    }
-
-    void Mesh::draw(Shader &shader) const
-    {
+        shader.use();
+        shader.setMat4("model", model);
+        shader.setMat4("view", view);
+        shader.setMat4("projection", glm::perspective(glm::radians(POV), (float)windowSize.width / (float)windowSize.height, 0.1f, 100.0f));
         shader.setInt("material.diffuse", texture.ID);
 
-        // draw mesh
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, (GLsizei) indices.size(), GL_UNSIGNED_INT, (const GLvoid *) 0);
         glBindVertexArray(0);
-
-        glActiveTexture(GL_TEXTURE0);
     }
 } // namespace swe

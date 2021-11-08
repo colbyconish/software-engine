@@ -1,4 +1,4 @@
-/*namespace swe
+namespace swe
 {
     Renderer::Renderer()
         : currentCamera(nullptr), currentShader(nullptr)
@@ -46,4 +46,4 @@
         glDrawElements(GL_TRIANGLES, mesh->getNumIndis(), GL_UNSIGNED_INT, 0);
         return 0;
     }
-} // END namespace swe*/
+} // END namespace swe

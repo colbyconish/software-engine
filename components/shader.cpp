@@ -7,9 +7,12 @@
 
 namespace swe{
 
-    unsigned int Shader::shaderInUse;
+    uint32_t Shader::shaderInUse = 0;
+    Shader Shader::defaultShader = Shader(0);
 
-    Shader::Shader(const char *vertexPath, const char *fragmentPath)
+    Shader::Shader(uint32_t ID) : ID(ID) {}
+
+    Shader Shader::fromFile(const char *vertexPath, const char *fragmentPath)
     {
         std::string vertexCode;
         std::string fragmentCode;
@@ -49,12 +52,37 @@ namespace swe{
         //create shaders from code
         unsigned int vShader = createShader(GL_VERTEX_SHADER, vShaderCode);
         unsigned int fShader = createShader(GL_FRAGMENT_SHADER, fShaderCode);
-
-        linkShader(vShader, fShader);
+        
+        unsigned int id = linkShader(vShader, fShader);
 
         // delete the shaders
         glDeleteShader(vShader);
         glDeleteShader(fShader);
+
+        return Shader(id);
+    }
+
+    Shader Shader::fromString(const char *vertexCode, const char *fragmentCode)
+    {
+        //create shaders from code
+        unsigned int vShader = createShader(GL_VERTEX_SHADER, vertexCode);
+        unsigned int fShader = createShader(GL_FRAGMENT_SHADER, fragmentCode);
+
+        unsigned int id = linkShader(vShader, fShader);
+
+        // delete the shaders
+        glDeleteShader(vShader);
+        glDeleteShader(fShader);
+
+        return Shader(id);
+    }
+
+    Shader Shader::getDefaultShader()
+    {
+        if (defaultShader.ID == 0)
+            defaultShader = fromString(vertexCode, fragmentCode);
+        
+        return defaultShader;
     }
 
     void Shader::use() const
@@ -111,7 +139,9 @@ namespace swe{
     unsigned int Shader::createShader(unsigned int type, const char *code)
     {
         unsigned int shader = glCreateShader(type);
-        //check errors
+
+        if (shader == NULL)
+            std::cout << "Glad may not be initialized for this thread." << std::endl;
 
         //compile shader
         glShaderSource(shader, 1, &code, NULL);
@@ -137,23 +167,62 @@ namespace swe{
         return shader;
     }
 
-    void Shader::linkShader(unsigned int vShader, unsigned int fShader)
+    unsigned int Shader::linkShader(unsigned int vShader, unsigned int fShader)
     {
+
         //create shader program
-        ID = glCreateProgram();
-        glAttachShader(ID, vShader);
-        glAttachShader(ID, fShader);
-        glLinkProgram(ID);
+        unsigned int id = glCreateProgram();
+
+        glAttachShader(id, vShader);
+        glAttachShader(id, fShader);
+        glLinkProgram(id);
 
         //linking error checking
         int success;
         char infoLog[512];
-        glGetProgramiv(ID, GL_LINK_STATUS, &success);
+        glGetProgramiv(id, GL_LINK_STATUS, &success);
         if (!success)
         {
-            glGetProgramInfoLog(ID, 512, NULL, infoLog);
+            glGetProgramInfoLog(id, 512, NULL, infoLog);
             std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
                     << infoLog << std::endl;
         }
+
+        return id;
     }
+
+    const char *Shader::vertexCode = 
+        "#version 330 core\n"
+        "layout(location = 0) in vec3 aPos;\n"
+        "layout(location = 1) in vec2 aTexCoord;\n"
+
+        "out vec2 TexCoord;\n"
+
+        "uniform mat4 model;\n"
+        "uniform mat4 view;\n"
+        "uniform mat4 projection;\n"
+
+        "void main()\n"
+        "{\n"
+            "gl_Position = projection * model * view * vec4(aPos, 1.0);\n"
+            "TexCoord = aTexCoord;\n"
+        " }\n";
+
+    const char* Shader::fragmentCode =
+        "#version 330 core\n"
+        "struct Material\n"
+        "{\n"
+        "    sampler2D diffuse;\n"
+        "    sampler2D specular;\n"
+        "};\n"
+
+        "in vec2 TexCoord;\n"
+        "out vec4 FragColor;\n"
+
+        "uniform Material material;\n"
+
+        "void main()\n"
+        "{\n"
+        "    FragColor = texture(material.diffuse, TexCoord);\n"
+        "}\n";
 }

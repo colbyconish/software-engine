@@ -4,47 +4,29 @@
 
 namespace swe
 {
-    Model::Model(std::vector<Mesh> meshes)
-    : Component(compType::modelComp), meshes(meshes)
-    {
+    Model::Model()
+    : Component(compType::model) {}
 
+    model_ptr Model::createModel()
+    {
+        return model_ptr(new Model());
     }
 
     Model::~Model(){}
 
-    void Model::draw(Shader &shader)
+    void Model::addMesh(mesh_ptr mesh)
     {
-        for (Mesh mesh : meshes)
-            mesh.draw(shader);
+        meshes.push_back(mesh);
     }
 
-    unsigned int Model::loadTexture(const char *fileLocation)
+    void Model::render(Dimensions windowSize, Shader &shader, glm::mat4 model, glm::mat4 view)
     {
-        unsigned int id;
-        
-        glGenTextures(1, &id);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, id);
-        
-        int width, height, nrChannels;
-        unsigned char *data = stbi_load(fileLocation, &width, &height, &nrChannels, 0);
-        if (data)
-        {
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-            glGenerateMipmap(GL_TEXTURE_2D);
-        }
-        else
-        {
-            std::cout << "Failed to load texture" << std::endl;
-        }
-        stbi_image_free(data);
-        glBindTexture(GL_TEXTURE_2D, NULL);
-
-        return id;
+        for (mesh_ptr mesh : meshes)
+            mesh->draw(windowSize, shader, model, view);
     }
 
-    std::shared_ptr<Model> Model::shared_ptr()
+    compType Model::ClassType()
     {
-        return std::shared_ptr<Model>(this);
+        return compType::model;
     }
 }// END namespace swe

@@ -3,24 +3,17 @@
 
 namespace swe
 {
-    Window *Window::currentContext = nullptr;
     std::vector<windowData> Window::windowRequests = std::vector<windowData>();
     std::vector<std::shared_ptr<Window>> Window::windows = std::vector<std::shared_ptr<Window>>();
 
     Window::Window(int width, int height, const char *title,
                    GLFWmonitor *monitor, GLFWwindow *window,
-                   bool resizable, Menu menu) 
-        : deltaTime(0.0f), lastFrame(0.0f), ID(nullptr)
+                   bool resizable, Menu menu)
+        : deltaTime(0.0f), lastFrame(0.0f), ID(nullptr), current_scene(nullptr)
     {
-        if (!glfwReady)
-        {
-            std::cout << "GLFW not initialized." << std::endl;
-            return;
-        }
-
-        //glfwWindowHint(GLFW_DECORATED, false);
-        if (!resizable)
-            glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+        //setting window hints
+        //GLFW_SCALE_TO_MONITOR
+        resizable ? glfwWindowHint(GLFW_RESIZABLE, GL_TRUE) : glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
         ID = glfwCreateWindow(width, height, title, monitor, window);
 
@@ -30,7 +23,6 @@ namespace swe
             glfwTerminate();
             return;
         }
-        graphics_thread = std::thread(Window::thread_main, this);
 
         setMenu(menu);
 
@@ -48,20 +40,18 @@ namespace swe
 
     Window::~Window()
     {
-        graphics_thread.join();
+        if (graphics_thread.joinable()) graphics_thread.join();
         glfwDestroyWindow(ID);
     }
 
-    void Window::close()
+    inline void Window::close()
     {
         glfwSetWindowShouldClose(ID, GLFW_TRUE);
     }
 
     void Window::makeCurrent()
     {
-        currentContext = this;
         glfwMakeContextCurrent(ID);
-        initGLAD();
     }
 
     GLFWwindow* Window::getID()
@@ -74,10 +64,7 @@ namespace swe
         switch (attr)
         {
             case windowAttr::lockedCursor:
-                if (set)
-                    glfwSetInputMode(ID, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-                else
-                    glfwSetInputMode(ID, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                glfwSetInputMode(ID, GLFW_CURSOR, set ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
                 break;
             default:
                 std::cout << "No such attribute." << std::endl;
@@ -126,7 +113,7 @@ namespace swe
             glfwSetWindowShouldClose(ID, GLFW_TRUE);
     }
 
-    void Window::swapBuffers()
+    inline void Window::swapBuffers()
     {
         glfwSwapBuffers(ID);
     }
@@ -143,17 +130,40 @@ namespace swe
         menuFunctions.at(id)((DYNAMIC_PTR)this);
     }
 
-    Window* Window::getWindow(GLFWwindow* id)
+    window_ptr Window::getWindow(GLFWwindow* id)
     {
         for (std::shared_ptr<Window> win : windows)
             if (win->ID == id)
-                return win.get();
+                return win;
 
         return nullptr;
     }
 
-    void Window::AppMain()
+    Dimensions Window::getDimensions() const
     {
+        Dimensions size;
+        glfwGetWindowSize(ID, &size.width, &size.height);
+        return size;
+    }
+
+    GLFWmonitor* Window::currentMonitor()
+    {
+        return glfwGetPrimaryMonitor();
+    }
+
+    void Window::Main()
+    {
+        if (!glfwReady)
+        {
+            std::cout << "GLFW not initialized." << std::endl;
+            return;
+        }
+
+        //Sart all graphics threads
+        glfwMakeContextCurrent(NULL);
+        for (window_ptr win : windows)
+            win->graphics_thread = std::thread(Window::thread_main, win.get());
+
         while (windows.size() > 0)
         {
             //Fufill window requests
@@ -168,48 +178,81 @@ namespace swe
             {
                 if (!windows[i]->shouldClose())
                 {
-                    glfwWaitEvents();
+                    glfwPollEvents();
+                    windows[i]->processInput();
                     windows[i]->endLoop();
                 }
                 else
+                {
+                    windows[i]->graphics_thread.join();
                     windows.erase(windows.begin() + i);
+                }
             }
         }
         glfwTerminate();
     }
 
-    void Window::thread_main(Window *win)
+    void Window::thread_main(Window* win)
     {
         win->makeCurrent();
+        initGLAD(); 
+        glEnable(GL_DEPTH_TEST);
 
         while (!win->shouldClose())
         {
-            win->drawBackground(0.1f, 0.4f, 0.3f);
-
+            win->renderScene();
             win->swapBuffers();
         }
     }
 
-    void Window::createWindow(int width, int height, const char* title,
+    void Window::loadScene(std::shared_ptr<Scene> scene)
+    {
+        current_scene = scene;
+    }
+
+    void Window::renderScene()
+    {
+        if (current_scene == nullptr)
+            return;
+
+        drawBackground(current_scene->background_color);
+        current_scene->render(getDimensions());
+    }
+
+    window_ptr Window::createWindow(int width, int height, const char* title,
                                 GLFWmonitor* monitor, GLFWwindow* window,
                                 bool resizable, Menu menu)
     {
+        if (!glfwReady)
+        {
+            std::cout << "GLFW not initialized." << std::endl;
+            return nullptr;
+        }
+
         windows.emplace_back(new Window(width, height, title, monitor, window, resizable, menu));
+        return windows.back();
     }
 
-    void Window::createWindow(windowData wd)
+    window_ptr Window::createWindow(windowData wd)
     {
-        windows.emplace_back(new Window(wd.width, wd.height, wd.title, wd.monitor, wd.window, wd.resizable, wd.menu));
+        if (!glfwReady)
+        {
+            std::cout << "GLFW not initialized." << std::endl;
+            return nullptr;
+        }
+
+        windows.emplace_back(new Window(wd.size.width, wd.size.height, wd.title, wd.monitor, wd.window, wd.resizable, wd.menu));
+        return windows.back();
     }
 
-    void Window::createWindowRequest(int width, int height, const char* title,
+    void Window::requestWindow(int width, int height, const char* title,
                                 GLFWmonitor* monitor, GLFWwindow* window,
                                 bool resizable, Menu menu)
     {
-        windowRequests.emplace_back(windowData{width, height, title, monitor, window, resizable, menu});
+        windowRequests.emplace_back(windowData{{width, height}, title, monitor, window, resizable, menu });
     }
 
-    void Window::createWindowRequest(windowData wd)
+    void Window::requestWindow(windowData wd)
     {
         windowRequests.emplace_back(wd);
     }
@@ -255,7 +298,7 @@ namespace swe
         switch(uMsg)
         {
         case WM_COMMAND:
-            std::async([window](WPARAM wp) { window->callMenuCallback(wp); }, wParam);
+            std::async([window](WPARAM wp) { window->callMenuCallback(wp);}, wParam);
             return 0;
         case WM_CLOSE:
             window->close();

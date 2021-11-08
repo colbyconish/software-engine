@@ -3,9 +3,12 @@
 
 namespace swe 
 {
-    Scene::Scene(std::string name)
-        : name(name), ID(SceneManager::getSize())
+    Scene::Scene() :background_color(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)), currentShader(Shader::getDefaultShader())
+                    , currentCamera(nullptr) {}
+
+    scene_ptr Scene::createScene()
     {
+        return scene_ptr(new Scene());
     }
 
     void Scene::addObject(std::shared_ptr<Object> obj)
@@ -13,12 +16,16 @@ namespace swe
         objects.push_back(obj);
     }
 
-    unsigned int Scene::getID() const
+    void Scene::render(Dimensions windowSize)
     {
-        return ID;
-    }
-    std::string Scene::getName() const
-    {
-        return name;
+        //if (currentCamera == nullptr)
+            //return;
+        for (object_ptr o : objects)
+        {
+            std::shared_ptr<Model> model = o->getComponent<Model>();
+            if (model == nullptr)
+                continue;
+            model->render(windowSize, currentShader, o->getModelMatrix(), glm::mat4(1.0f)); //currentCamera->getViewMatrix()
+        }
     }
 }

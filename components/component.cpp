@@ -11,9 +11,13 @@ namespace swe
 
     Component::~Component() {}
 
-    std::shared_ptr<Component> Component::shared_ptr()
+    compType Component::ClassType()
     {
-        std::cout << "Comp";
-        return std::shared_ptr<Component>();
+        return compType::base;
+    }
+
+    compType Component::getType()
+    {
+        return type;
     }
 } // namespace swe

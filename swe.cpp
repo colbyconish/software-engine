@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "framework.h"
 
+#define STB_IMAGE_IMPLEMENTATION
 #include <SWE\swe.h>
 
 
@@ -31,10 +32,20 @@ namespace swe {
         }
     }
 
-    void initGLAD()
+    int initGLAD()
     {
-        if(!gladReady)
-            if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-                std::cout << "Failed to initialize GLAD" << std::endl;
+        if (!glfwReady) initGLFW();//throw warning
+
+        GLFWwindow *temp = glfwGetCurrentContext();
+        if (temp == nullptr)
+        {
+            std::cout << "There must be a current context to initialize glad." << std::endl;//throw error
+            return 0;
+        }
+
+        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+            std::cout << "Failed to initialize GLAD" << std::endl;//throw error
+
+        return 1;
     }
 }
