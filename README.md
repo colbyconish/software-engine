@@ -6,6 +6,7 @@
 	<li>GLFW3native</li>
 	<li>GLM</li>
 	<li>STB</li>
+	<li>LUA</li>
 	<li>FREETYPE</li>
 </ul>
 
