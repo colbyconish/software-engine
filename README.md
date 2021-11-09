@@ -29,6 +29,7 @@ Short-Term:
 	13. make texcture class hold texture int instead of offset
 	14. make a default shader for text
 	15> separate the swe.h file into many smaller files
+	26. make importing for lua scripts
 
 Long-Term:
 	15. clean code check

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include <SWE/Objects/object.h>
+#include <SWE/Engine/luaController.h>
 
 
 namespace swe
@@ -9,9 +10,9 @@ namespace swe
     glm::vec3 zAxis = glm::vec3(0.0f, 0.0f, 1.0f);
 
     Object::Object(glm::vec3 pos, glm::vec3 rot, glm::vec3 s)
-        : position(pos), rotation(rot), scale(s)
-    {
-    }
+        :position(pos), rotation(rot), scale(s) {}
+
+    Object::Object() :position(glm::vec3(1.0f)), rotation(glm::vec3(1.0f)), scale(glm::vec3(1.0f)) {}
 
     Object::~Object() {}
 
@@ -48,14 +49,18 @@ namespace swe
 
     int Object::lua_createObject(lua_State *ls)
     {
-        lua_newtable(ls);
-        lua_pushstring(ls, "x");
-        lua_pushnumber(ls, 0);
-        lua_settable(ls, -3);
+        void* obj_ptr = lua_newuserdata(ls, sizeof(Object));
+        new (obj_ptr) Object();
 
-        luaL_getmetatable(ls, "ObjectMeta");
+        luaL_getmetatable(ls, lua_object_name);
         lua_setmetatable(ls, -2);
-
         return 1;
+    }
+
+    int Object::lua_destroyObject(lua_State* ls)
+    {
+        Object *obj_ptr = (Object *)lua_touserdata(ls, -1);
+        obj_ptr->~Object();
+        return 0;
     }
 } // END namespace swe
