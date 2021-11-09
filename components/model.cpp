@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "SWE/SWE.h"
+#include <SWE/Components/model.h>
 
 
 namespace swe

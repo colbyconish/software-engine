@@ -138,7 +138,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>glfw3.lib;comctl32.lib</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;lua54.lib</AdditionalDependencies>
       <OutputFile>$(OutputPath)$(TargetName)$(TargetExt)</OutputFile>
     </Lib>
   </ItemDefinitionGroup>
@@ -162,6 +162,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Components\component.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Components\mesh.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Components\model.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Components\shader.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Components\texture.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\error.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\luaController.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\menu.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\scene.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\window.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Objects\camera.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Objects\object.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\structs.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\SWE.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
@@ -173,8 +186,9 @@
     <ClCompile Include="components\model.cpp" />
     <ClCompile Include="components\shader.cpp" />
     <ClCompile Include="components\texture.cpp" />
+    <ClCompile Include="engine\luaController.cpp" />
     <ClCompile Include="engine\scene.cpp" />
-    <ClCompile Include="engine\Menu.cpp" />
+    <ClCompile Include="engine\menu.cpp" />
     <ClCompile Include="engine\Error.cpp" />
     <ClCompile Include="engine\window.cpp" />
     <ClCompile Include="glad.c">
@@ -187,10 +201,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="swe.cpp">
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </AdditionalIncludeDirectories>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

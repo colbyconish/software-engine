@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "SWE/SWE.h"
+#include <SWE/Objects/camera.h>
 
 namespace swe
 {

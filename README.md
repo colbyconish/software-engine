@@ -28,6 +28,7 @@ Short-Term:
 	12. Error class
 	13. make texcture class hold texture int instead of offset
 	14. make a default shader for text
+	15> separate the swe.h file into many smaller files
 
 Long-Term:
 	15. clean code check

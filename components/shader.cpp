@@ -1,8 +1,10 @@
 #include "pch.h"
+#include <glad/glad.h>
+#include <GLM/gtc/type_ptr.hpp>
 #include <string>
 #include <fstream>
 #include <sstream>
-#include "SWE/SWE.h"
+#include <SWE/Components/shader.h>
 
 
 namespace swe{

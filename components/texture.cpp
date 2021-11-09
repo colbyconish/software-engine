@@ -1,5 +1,8 @@
 #include "pch.h"
-#include <SWE/SWE.h>
+#include <SWE/Components/texture.h>
+#include <glad/glad.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include <STB/stb_image.h>
 
 #define TEXTURE_MAX 16
 
