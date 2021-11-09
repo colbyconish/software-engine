@@ -1,9 +1,12 @@
 #include "pch.h"
-#include <SWE/SWE.h>
+#include <SWE/Engine/menu.h>
+#include <map>
 
 namespace swe
 {
 	size_t MenuTab::tabCount = 0;
+
+	MenuCallback defaultCallback = [](DYNAMIC_PTR dp) {};
 
 	MenuTab::MenuTab(std::string name, MenuCallback callBack, tabType type) 
 		: name(name), type(type), callBack(callBack), ID(tabCount++) {}

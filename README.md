@@ -6,6 +6,7 @@
 	<li>GLFW3native</li>
 	<li>GLM</li>
 	<li>STB</li>
+	<li>LUA</li>
 	<li>FREETYPE</li>
 </ul>
 
@@ -28,6 +29,8 @@ Short-Term:
 	12. Error class
 	13. make texcture class hold texture int instead of offset
 	14. make a default shader for text
+	15> separate the swe.h file into many smaller files
+	26. make importing for lua scripts
 
 Long-Term:
 	15. clean code check

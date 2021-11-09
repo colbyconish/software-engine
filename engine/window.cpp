@@ -1,8 +1,11 @@
 #include "pch.h"
-#include <SWE/SWE.h>
+#include <SWE/Engine/window.h>
+#include <future>
 
 namespace swe
 {
+
+    bool glfwReady = false;
     std::vector<windowData> Window::windowRequests = std::vector<windowData>();
     std::vector<std::shared_ptr<Window>> Window::windows = std::vector<std::shared_ptr<Window>>();
 
@@ -312,4 +315,37 @@ namespace swe
 #endif
 #ifdef __linux__
 #endif
+
+    void initGLFW()
+    {
+        if (!glfwReady)
+        {
+            glfwInit();
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifdef __APPLE__
+            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+
+            glfwReady = true;
+        }
+    }
+
+    int initGLAD()
+    {
+        if (!glfwReady) initGLFW();//throw warning
+
+        GLFWwindow* temp = glfwGetCurrentContext();
+        if (temp == nullptr)
+        {
+            std::cout << "There must be a current context to initialize glad." << std::endl;//throw error
+            return 0;
+        }
+
+        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+            std::cout << "Failed to initialize GLAD" << std::endl;//throw error
+
+        return 1;
+    }
 } // END namespace swe

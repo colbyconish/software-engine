@@ -1,5 +1,7 @@
 #include "pch.h"
-#include "SWE/SWE.h"
+#include <SWE/Engine/window.h>
+#include <SWE/Components/model.h>
+#include <SWE/Objects/object.h>
 
 namespace swe 
 {
