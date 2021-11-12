@@ -1,5 +1,4 @@
 #include "pch.h"
-#include <glad/glad.h>
 #include <SWE/Components/mesh.h>
 
 #define POV 45.0f

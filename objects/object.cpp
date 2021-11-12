@@ -2,9 +2,10 @@
 #include <SWE/Objects/object.h>
 #include <SWE/Engine/luaController.h>
 
-
 namespace swe
 {
+    void test(int x, int y) { printf("test%i", x*y); }
+
     glm::vec3 xAxis = glm::vec3(1.0f, 0.0f, 0.0f);
     glm::vec3 yAxis = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::vec3 zAxis = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -12,7 +13,7 @@ namespace swe
     Object::Object(glm::vec3 pos, glm::vec3 rot, glm::vec3 s)
         :position(pos), rotation(rot), scale(s) {}
 
-    Object::Object() :position(glm::vec3(1.0f)), rotation(glm::vec3(1.0f)), scale(glm::vec3(1.0f)) {}
+    Object::Object() :position(glm::vec3(0.0f)), rotation(glm::vec3(0.0f)), scale(glm::vec3(1.0f)) {}
 
     Object::~Object() {}
 
@@ -47,6 +48,7 @@ namespace swe
         return model;
     }
 
+    //lua functions
     int Object::lua_createObject(lua_State *ls)
     {
         void* obj_ptr = lua_newuserdata(ls, sizeof(Object));
@@ -63,4 +65,69 @@ namespace swe
         obj_ptr->~Object();
         return 0;
     }
+
+    int Object::lua_addComponent(lua_State* ls)
+    {
+
+        return 0;
+    }
+
+    int Object::lua_getComponent(lua_State* ls)
+    {
+        return 0;
+    }
+
+    int Object::lua_indexObject(lua_State* ls)
+    {
+        Object* obj_ptr = (Object*)lua_touserdata(ls, -2);
+        std::string idx = lua_tostring(ls, -1);
+
+        if (idx == "position")
+        {
+            lua_pushnumber(ls, obj_ptr->position.x);
+            return 1;
+        }
+        else if (idx == "rotation")
+        {
+            lua_pushnumber(ls, obj_ptr->rotation.x);
+            return 1;
+        }
+        else if (idx == "scale")
+        {
+            lua_pushnumber(ls, obj_ptr->scale.x);
+            return 1;
+        }
+        else
+        {
+            lua_getglobal(ls, "Object");
+            lua_pushstring(ls, idx.c_str());
+            
+            if (lua_rawget(ls, -2) == LUA_TFUNCTION)
+                return 1;
+            else 
+            {
+                std::cout << "Object has no member " << idx << std::endl;
+                return 1;
+            }
+        }
+    }
+
+    int Object::lua_writeObject(lua_State* ls)
+    {
+        Object* obj_ptr = (Object*)lua_touserdata(ls, -3);
+        std::string idx = lua_tostring(ls, -2);
+        float value = (float)lua_tonumber(ls, -1);
+
+        if (idx == "position")
+            obj_ptr->position.x = value;
+        else if (idx == "rotation")
+            obj_ptr->rotation.x = value;
+        else if (idx == "scale")
+            obj_ptr->scale.x = value;
+        else
+            std::cout << "Object has no writable member " << idx << std::endl;
+
+        return 0;
+    }
 } // END namespace swe
+

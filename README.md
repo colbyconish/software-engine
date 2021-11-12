@@ -7,6 +7,7 @@
 	<li>GLM</li>
 	<li>STB</li>
 	<li>LUA</li>
+	<li>RTTR</li>
 	<li>FREETYPE</li>
 </ul>
 

@@ -63,7 +63,7 @@
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Objects\camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\structs.h">
+    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Components\script.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -108,6 +108,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="engine\luaController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="script.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
