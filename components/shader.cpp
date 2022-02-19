@@ -193,7 +193,7 @@ namespace swe{
         return id;
     }
 
-    const char *Shader::vertexCode = 
+    const char* Shader::vertexCode = 
         "#version 330 core\n"
         "layout(location = 0) in vec3 aPos;\n"
         "layout(location = 1) in vec2 aTexCoord;\n"

@@ -4,7 +4,6 @@
 
 namespace swe
 {
-
     bool glfwReady = false;
     std::vector<windowData> Window::windowRequests = std::vector<windowData>();
     std::vector<std::shared_ptr<Window>> Window::windows = std::vector<std::shared_ptr<Window>>();
@@ -192,6 +191,7 @@ namespace swe
                 }
             }
         }
+
         glfwTerminate();
     }
 

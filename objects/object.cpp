@@ -1,133 +1,90 @@
 #include "pch.h"
 #include <SWE/Objects/object.h>
-#include <SWE/Engine/luaController.h>
+#include <SWE/Components/transform.h>
+#include <SWE/Components/model.h>
+#include <SWE/Components/script.h>
 
 namespace swe
 {
-    void test(int x, int y) { printf("test%i", x*y); }
+    double test(double x, double y) { return x * y; }
 
-    glm::vec3 xAxis = glm::vec3(1.0f, 0.0f, 0.0f);
-    glm::vec3 yAxis = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::vec3 zAxis = glm::vec3(0.0f, 0.0f, 1.0f);
+    void Object::print()
+    {
+        std::shared_ptr<Transform> transform = getComponent<Transform>();
+        printf("Object : %d\n", transform.use_count());
+        printf("\t%f, %f, %f\n", transform->position->x, transform->position->y, transform->position->z);
+        printf("\t%f, %f, %f\n", transform->rotation->x, transform->rotation->y, transform->rotation->z);
+        printf("\t%f, %f, %f\n", transform->scale->x, transform->scale->y, transform->scale->z);
+    }
 
     Object::Object(glm::vec3 pos, glm::vec3 rot, glm::vec3 s)
-        :position(pos), rotation(rot), scale(s) {}
+    {
+        addComponent(std::shared_ptr<Transform>(new Transform(pos, rot, s)));
+    }
 
-    Object::Object() :position(glm::vec3(0.0f)), rotation(glm::vec3(0.0f)), scale(glm::vec3(1.0f)) {}
+    Object::Object() 
+    {
+        addComponent(std::shared_ptr<Transform>(new Transform()));
+    }
 
-    Object::~Object() {}
+    Object::~Object() { printf("%s\n", "Object died"); }
 
     void Object::update() {}
 
-    object_ptr Object::createObject(glm::vec3 pos, glm::vec3 rot, glm::vec3 s)
+    object_ptr Object::createObject()
     {
-        return object_ptr(new Object(pos, rot, s));
+        return object_ptr(new Object(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f)));
     }
 
-    int Object::addComponent(std::shared_ptr<Component> comp)
+    std::shared_ptr<Component> Object::luaGetComponent(const char* t) const
     {
-        /*if (!(getComponent<Component>() == nullptr))
+        compType type = Component::stringToCompType(t);
+
+        switch (type)
         {
-            std::cout << "Object already has this type of component." << std::endl;
-            return 1;
-        }*/
+        case compType::transform:
+            return getComponent<Transform>();
+            break;
 
-        components.push_back(comp);
-        return 0;
-    }
+        case compType::model:
+            return getComponent<Model>();
+            break;
 
-    glm::mat4 Object::getModelMatrix() const
-    {
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::scale(model, scale);
-        model = glm::rotate(model, glm::radians(rotation.x), xAxis);
-        model = glm::rotate(model, glm::radians(rotation.y), yAxis);
-        model = glm::rotate(model, glm::radians(rotation.z), zAxis);
-        model = glm::translate(model, position);
+        case compType::script:
+            return getComponent<Script>();
+            break;
 
-        return model;
-    }
-
-    //lua functions
-    int Object::lua_createObject(lua_State *ls)
-    {
-        void* obj_ptr = lua_newuserdata(ls, sizeof(Object));
-        new (obj_ptr) Object();
-
-        luaL_getmetatable(ls, lua_object_name);
-        lua_setmetatable(ls, -2);
-        return 1;
-    }
-
-    int Object::lua_destroyObject(lua_State* ls)
-    {
-        Object *obj_ptr = (Object *)lua_touserdata(ls, -1);
-        obj_ptr->~Object();
-        return 0;
-    }
-
-    int Object::lua_addComponent(lua_State* ls)
-    {
-
-        return 0;
-    }
-
-    int Object::lua_getComponent(lua_State* ls)
-    {
-        return 0;
-    }
-
-    int Object::lua_indexObject(lua_State* ls)
-    {
-        Object* obj_ptr = (Object*)lua_touserdata(ls, -2);
-        std::string idx = lua_tostring(ls, -1);
-
-        if (idx == "position")
-        {
-            lua_pushnumber(ls, obj_ptr->position.x);
-            return 1;
+        default:
+            std::cout << "Invalid component type in luaGetComponent." << std::endl;
         }
-        else if (idx == "rotation")
+
+        return nullptr;
+    }
+
+    bool Object::addComponent(std::shared_ptr<Component> comp)
+    {
+        compType type = comp->getType();
+        if (type == compType::base)
         {
-            lua_pushnumber(ls, obj_ptr->rotation.x);
-            return 1;
-        }
-        else if (idx == "scale")
+            std::cout << "Passed in unusable component." << std::endl;
+            return 0;
+        }   
+
+        auto it = components.find(type);
+        if (it == components.end())
         {
-            lua_pushnumber(ls, obj_ptr->scale.x);
+            std::pair<compType, std::shared_ptr<Component>> pair(type, comp);
+            components.insert(pair);
             return 1;
         }
         else
         {
-            lua_getglobal(ls, "Object");
-            lua_pushstring(ls, idx.c_str());
-            
-            if (lua_rawget(ls, -2) == LUA_TFUNCTION)
-                return 1;
-            else 
-            {
-                std::cout << "Object has no member " << idx << std::endl;
-                return 1;
-            }
+            it->second = comp;
+            return 1;
         }
-    }
-
-    int Object::lua_writeObject(lua_State* ls)
-    {
-        Object* obj_ptr = (Object*)lua_touserdata(ls, -3);
-        std::string idx = lua_tostring(ls, -2);
-        float value = (float)lua_tonumber(ls, -1);
-
-        if (idx == "position")
-            obj_ptr->position.x = value;
-        else if (idx == "rotation")
-            obj_ptr->rotation.x = value;
-        else if (idx == "scale")
-            obj_ptr->scale.x = value;
-        else
-            std::cout << "Object has no writable member " << idx << std::endl;
 
         return 0;
     }
+
 } // END namespace swe
 

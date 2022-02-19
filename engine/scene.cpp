@@ -27,7 +27,7 @@ namespace swe
             std::shared_ptr<Model> model = o->getComponent<Model>();
             if (model == nullptr)
                 continue;
-            model->render(windowSize, currentShader, o->getModelMatrix(), glm::mat4(1.0f)); //currentCamera->getViewMatrix()
+            model->render(windowSize, currentShader, o->getComponent<Transform>()->getModelMatrix(), glm::mat4(1.0f)); //currentCamera->getViewMatrix()
         }
     }
 }

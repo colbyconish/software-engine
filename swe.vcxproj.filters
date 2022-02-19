@@ -66,6 +66,12 @@
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Components\script.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\vector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Components\transform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -111,6 +117,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="script.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="components\transform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

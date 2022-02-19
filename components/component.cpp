@@ -3,20 +3,24 @@
 
 namespace swe
 {
-    Component::Component(compType type)
-        : type(type)
-    {
-    }
+    Component::Component() {}
 
     Component::~Component() {}
 
-    compType Component::ClassType()
+    compType Component::getType() const
     {
-        return compType::base;
+        return compTypeFromTemplate<Component>{}.type;
     }
 
-    compType Component::getType()
+    compType Component::stringToCompType(std::string type)
     {
-        return type;
+        if (type == "base" || type == "Base") return compType::base;
+        else if (type == "transform" || type == "Transform") return compType::transform;
+        else if (type == "model" || type == "Model") return compType::model;
+        else if (type == "script" || type == "Script") return compType::script;
+
+        std::cout << "compType string not supported." << std::endl;
+        return compType::null;
     }
+
 } // namespace swe
