@@ -14,60 +14,34 @@
 <p>We have a <a href="https://trello.com/b/nJ8ITIK7/software-engine-swe">trello board</a> with all our current milestones.</p>
 
 #Starter Example : main.cpp
-	```c++
+
+	```cpp
+	#include <SWE/swe.h>
+
+	using namespace swe;
+
 	int main()
 	{
-		//create window
-		initGLFW();
-		window_ptr main = Window::createWindow(800, 600, "Game Test");
+		Application::Init();
+		window_ptr main = Application::createWindow(1000, 800, "Game Test", 0, 0, false);
+
 		main->makeCurrent();//glad needs a current context to init
-		initGLAD();
+		Application::initGLAD();
 
-		//load textures
-		Texture defaultTexture = Texture::loadTexture("textures/default.jpg", textureType::diffuse);
-		Texture containerTexture = Texture::loadTexture("textures/container.jpg", textureType::diffuse);
+		//Create test cube
+		object_ptr cube = Object::createPrimitive(primitiveType::Cube);
+		transform_ptr t = cube->getComponent<Transform>();
+		t->position->z = -3.0f;
 
-		//create vertexs and indicies
-		std::vector<Vertex> verts =
-		{
-			Vertex{glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec2(0.0f, 0.0f)}, Vertex{glm::vec3(0.5f, -0.5f, 0.0f), glm::vec2(1.0f, 0.0f)},
-			Vertex{glm::vec3(-0.5f, 0.5f, 0.0f), glm::vec2(0.0f, 1.0f)}, Vertex{glm::vec3(0.5f, 0.5f, 0.0f), glm::vec2(1.0f, 1.0f)}
-		};
-
-		std::vector<uint32_t> indis =
-		{
-			0, 1, 2,
-			1, 3, 2
-		};
-
-		//create mesh
-		mesh_ptr mesh = Mesh::createMesh(verts, indis, defaultTexture);
-
-		//create model
-		model_ptr model = Model::createModel();
-		model->addMesh(mesh);
-
-		//create objects
-		object_ptr object = Object::createObject();
-		object->getComponent<Transform>()->position->z = -3.0f;
-		object->addComponent(model);
-
-		//create scene
+		//Create scene
 		scene_ptr scene = Scene::createScene();
 		scene->background_color = glm::vec4(0.8f, 0.8f, 0.8f, 1.0f);
-		scene->addObject(object);
+		scene->addObject(cube);
 
-		//load scene
+		//Load scene
 		main->loadScene(scene);
 
-		LuaController::init();
-		int32_t err = LuaController::runFile("script.lua");
-		LuaController::close();
-
-		Window::Main();
+		Application::Main();
 		return 0;
 	}
 	```
-
-# NOTES 
-Tab separators can be added to the top level menu but are not displayed.
