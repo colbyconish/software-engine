@@ -7,37 +7,67 @@
 	<li>GLM</li>
 	<li>STB</li>
 	<li>LUA</li>
+	<li>RTTR (editted .h files)</li>
 	<li>FREETYPE</li>
 </ul>
 
 <p>We have a <a href="https://trello.com/b/nJ8ITIK7/software-engine-swe">trello board</a> with all our current milestones.</p>
 
-# TO-DO
-Tomorrow:
-	finish currentCamera for scenes
-Short-Term:
-	1. make a set menu function instead of it being in the constructor
-	2. Finish implementing menus:
-		d. add tab icons
-		z. duplicate all for mac and linux
-	4. make menu func map[0] only default in window class
-	6. Put mutex lock on accessing scene data.
-	8. virtual destructors
-	9. make addComponent templated
-	10. Use shader component to allow for use of non scene shader
-	11. Classes that use glad need to check that its initialized
-	12. Error class
-	13. make texcture class hold texture int instead of offset
-	14. make a default shader for text
-	15> separate the swe.h file into many smaller files
-	26. make importing for lua scripts
+#Starter Example : main.cpp
+	```c++
+	int main()
+	{
+		//create window
+		initGLFW();
+		window_ptr main = Window::createWindow(800, 600, "Game Test");
+		main->makeCurrent();//glad needs a current context to init
+		initGLAD();
 
-Long-Term:
-	15. clean code check
-	16. make perspective matrix in renderer use screen size instead of constant
-	21. check virtuals for components.
-	24. make moodification functions of scenes and objects threade safe
-	26. inline functions
+		//load textures
+		Texture defaultTexture = Texture::loadTexture("textures/default.jpg", textureType::diffuse);
+		Texture containerTexture = Texture::loadTexture("textures/container.jpg", textureType::diffuse);
+
+		//create vertexs and indicies
+		std::vector<Vertex> verts =
+		{
+			Vertex{glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec2(0.0f, 0.0f)}, Vertex{glm::vec3(0.5f, -0.5f, 0.0f), glm::vec2(1.0f, 0.0f)},
+			Vertex{glm::vec3(-0.5f, 0.5f, 0.0f), glm::vec2(0.0f, 1.0f)}, Vertex{glm::vec3(0.5f, 0.5f, 0.0f), glm::vec2(1.0f, 1.0f)}
+		};
+
+		std::vector<uint32_t> indis =
+		{
+			0, 1, 2,
+			1, 3, 2
+		};
+
+		//create mesh
+		mesh_ptr mesh = Mesh::createMesh(verts, indis, defaultTexture);
+
+		//create model
+		model_ptr model = Model::createModel();
+		model->addMesh(mesh);
+
+		//create objects
+		object_ptr object = Object::createObject();
+		object->getComponent<Transform>()->position->z = -3.0f;
+		object->addComponent(model);
+
+		//create scene
+		scene_ptr scene = Scene::createScene();
+		scene->background_color = glm::vec4(0.8f, 0.8f, 0.8f, 1.0f);
+		scene->addObject(object);
+
+		//load scene
+		main->loadScene(scene);
+
+		LuaController::init();
+		int32_t err = LuaController::runFile("script.lua");
+		LuaController::close();
+
+		Window::Main();
+		return 0;
+	}
+	```
 
 # NOTES 
-tab separators can be added to the top level menu but are not displayed
+Tab separators can be added to the top level menu but are not displayed.

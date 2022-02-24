@@ -1,14 +1,10 @@
 #include "pch.h"
 #include <SWE/Engine/window.h>
+#include <SWE/Engine/application.h>
 #include <future>
 
 namespace swe
 {
-
-    bool glfwReady = false;
-    std::vector<windowData> Window::windowRequests = std::vector<windowData>();
-    std::vector<std::shared_ptr<Window>> Window::windows = std::vector<std::shared_ptr<Window>>();
-
     Window::Window(int width, int height, const char *title,
                    GLFWmonitor *monitor, GLFWwindow *window,
                    bool resizable, Menu menu)
@@ -39,6 +35,13 @@ namespace swe
 #endif
 #ifdef __linux__
 #endif
+    }
+
+    Window* Window::makeWindow(int width, int height, const char* title,
+        GLFWmonitor* monitor, GLFWwindow* window,
+        bool resizable, Menu menu)
+    {
+        return new Window(width, height, title, monitor, window, resizable, menu);
     }
 
     Window::~Window()
@@ -133,15 +136,6 @@ namespace swe
         menuFunctions.at(id)((DYNAMIC_PTR)this);
     }
 
-    window_ptr Window::getWindow(GLFWwindow* id)
-    {
-        for (std::shared_ptr<Window> win : windows)
-            if (win->ID == id)
-                return win;
-
-        return nullptr;
-    }
-
     Dimensions Window::getDimensions() const
     {
         Dimensions size;
@@ -154,58 +148,32 @@ namespace swe
         return glfwGetPrimaryMonitor();
     }
 
-    void Window::Main()
-    {
-        if (!glfwReady)
-        {
-            std::cout << "GLFW not initialized." << std::endl;
-            return;
-        }
-
-        //Sart all graphics threads
-        glfwMakeContextCurrent(NULL);
-        for (window_ptr win : windows)
-            win->graphics_thread = std::thread(Window::thread_main, win.get());
-
-        while (windows.size() > 0)
-        {
-            //Fufill window requests
-            while (windowRequests.size() > 0)
-            {
-                Window::createWindow(windowRequests.back());
-                windowRequests.pop_back();
-            }
-
-            //Update existing windows
-            for (int i = (int)windows.size() - 1; i > -1; i--)
-            {
-                if (!windows[i]->shouldClose())
-                {
-                    glfwPollEvents();
-                    windows[i]->processInput();
-                    windows[i]->endLoop();
-                }
-                else
-                {
-                    windows[i]->graphics_thread.join();
-                    windows.erase(windows.begin() + i);
-                }
-            }
-        }
-        glfwTerminate();
-    }
-
     void Window::thread_main(Window* win)
     {
         win->makeCurrent();
-        initGLAD(); 
-        glEnable(GL_DEPTH_TEST);
+        Application::initGLAD(); 
 
         while (!win->shouldClose())
         {
+            double start = glfwGetTime();
             win->renderScene();
+            win->updateScene();
             win->swapBuffers();
+            double elapsed = glfwGetTime() - start;
+
+            //frame capping
+            std::this_thread::sleep_for(std::chrono::milliseconds((int)((Application::getFpsCap() - elapsed)*1000)));
         }
+    }
+
+    void Window::startThread()
+    {
+        graphics_thread = std::thread(Window::thread_main, this);
+    }
+
+    void Window::stopThread()
+    {
+        graphics_thread.join();
     }
 
     void Window::loadScene(std::shared_ptr<Scene> scene)
@@ -222,42 +190,12 @@ namespace swe
         current_scene->render(getDimensions());
     }
 
-    window_ptr Window::createWindow(int width, int height, const char* title,
-                                GLFWmonitor* monitor, GLFWwindow* window,
-                                bool resizable, Menu menu)
+    void Window::updateScene()
     {
-        if (!glfwReady)
-        {
-            std::cout << "GLFW not initialized." << std::endl;
-            return nullptr;
-        }
+        if (current_scene == nullptr)
+            return;
 
-        windows.emplace_back(new Window(width, height, title, monitor, window, resizable, menu));
-        return windows.back();
-    }
-
-    window_ptr Window::createWindow(windowData wd)
-    {
-        if (!glfwReady)
-        {
-            std::cout << "GLFW not initialized." << std::endl;
-            return nullptr;
-        }
-
-        windows.emplace_back(new Window(wd.size.width, wd.size.height, wd.title, wd.monitor, wd.window, wd.resizable, wd.menu));
-        return windows.back();
-    }
-
-    void Window::requestWindow(int width, int height, const char* title,
-                                GLFWmonitor* monitor, GLFWwindow* window,
-                                bool resizable, Menu menu)
-    {
-        windowRequests.emplace_back(windowData{{width, height}, title, monitor, window, resizable, menu });
-    }
-
-    void Window::requestWindow(windowData wd)
-    {
-        windowRequests.emplace_back(wd);
+        current_scene->update();
     }
 
     void Window::framebuffer_size_callback(GLFWwindow *window, int width, int height)
@@ -316,36 +254,4 @@ namespace swe
 #ifdef __linux__
 #endif
 
-    void initGLFW()
-    {
-        if (!glfwReady)
-        {
-            glfwInit();
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#ifdef __APPLE__
-            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-
-            glfwReady = true;
-        }
-    }
-
-    int initGLAD()
-    {
-        if (!glfwReady) initGLFW();//throw warning
-
-        GLFWwindow* temp = glfwGetCurrentContext();
-        if (temp == nullptr)
-        {
-            std::cout << "There must be a current context to initialize glad." << std::endl;//throw error
-            return 0;
-        }
-
-        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-            std::cout << "Failed to initialize GLAD" << std::endl;//throw error
-
-        return 1;
-    }
 } // END namespace swe

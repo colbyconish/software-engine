@@ -1,5 +1,6 @@
 #include "pch.h"
 #include <SWE/Components/texture.h>
+#include <SWE/Engine/error.h>
 #include <glad/glad.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include <STB/stb_image.h>
@@ -51,12 +52,13 @@ namespace swe
         else
         {
             std::cout << "Failed to load texture" << std::endl;
+            return Texture(-1, "", type);;
         }
         stbi_image_free(data);
 
         active_textures.emplace(fileLocation, offset);
 
-        std::cout << fileLocation << " loaded into " << (int)offset << std::endl;
+        auto info = Error(fileLocation+" loaded into "+std::to_string((int)offset), errorLevel::Info, __SOURCELOCATION__);
         Texture t = Texture(offset, fileLocation, type);
         return t;
     }

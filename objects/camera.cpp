@@ -11,10 +11,11 @@ namespace swe
 
     void Camera::update()
     {
+        std::shared_ptr<Transform> transform = getComponent<Transform>();
         glm::vec3 Front;
-        Front.x = cos(glm::radians(rotation.y)) * cos(glm::radians(rotation.x));
-        Front.y = sin(glm::radians(rotation.x));
-        Front.z = sin(glm::radians(rotation.y)) * cos(glm::radians(rotation.x));
+        Front.x = cos(glm::radians(transform->rotation->y)) * cos(glm::radians(transform->rotation->x));
+        Front.y = sin(glm::radians(transform->rotation->x));
+        Front.z = sin(glm::radians(transform->rotation->y)) * cos(glm::radians(transform->rotation->x));
         front = glm::normalize(Front);
         right = glm::normalize(glm::cross(front, worldUp));
         up = glm::normalize(glm::cross(right, front));
@@ -22,7 +23,8 @@ namespace swe
 
     glm::mat4 Camera::getViewMatrix() const
     {
-        return glm::lookAt(position, position + front, up);
+        std::shared_ptr<Transform> transform = getComponent<Transform>();
+        return glm::lookAt(*transform->position, *transform->position + front, up);
     }
 
     /*glm::mat4 Camera::getViewMatrix2D() const

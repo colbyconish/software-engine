@@ -5,7 +5,7 @@
 namespace swe
 {
     Model::Model()
-    : Component(compType::model) {}
+    : Component() {}
 
     model_ptr Model::createModel()
     {
@@ -25,8 +25,9 @@ namespace swe
             mesh->draw(windowSize, shader, model, view);
     }
 
-    compType Model::ClassType()
+    compType Model::getType() const
     {
-        return compType::model;
+        return compTypeFromTemplate<Model>{}.type;
     }
+
 }// END namespace swe

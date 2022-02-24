@@ -87,6 +87,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>C:\Third Party Libraries\Include;$(ProjectDir);$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Third Party Libraries\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -127,10 +129,11 @@
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -138,7 +141,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>glfw3.lib;lua54.lib</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;lua54.lib;librttr_core_d.lib;comctl32.lib;</AdditionalDependencies>
       <OutputFile>$(OutputPath)$(TargetName)$(TargetExt)</OutputFile>
     </Lib>
   </ItemDefinitionGroup>
@@ -149,9 +152,12 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -165,16 +171,19 @@
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Components\component.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Components\mesh.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Components\model.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Components\script.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Components\shader.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Components\texture.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Components\transform.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\application.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\error.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\luaController.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\menu.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\scene.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\vector.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\window.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Objects\camera.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Objects\object.h" />
-    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\structs.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\SWE.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
@@ -186,10 +195,12 @@
     <ClCompile Include="components\model.cpp" />
     <ClCompile Include="components\shader.cpp" />
     <ClCompile Include="components\texture.cpp" />
+    <ClCompile Include="components\transform.cpp" />
+    <ClCompile Include="engine\application.cpp" />
     <ClCompile Include="engine\luaController.cpp" />
     <ClCompile Include="engine\scene.cpp" />
     <ClCompile Include="engine\menu.cpp" />
-    <ClCompile Include="engine\Error.cpp" />
+    <ClCompile Include="engine\error.cpp" />
     <ClCompile Include="engine\window.cpp" />
     <ClCompile Include="glad.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -202,6 +213,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="script.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
