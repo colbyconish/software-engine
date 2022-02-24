@@ -30,4 +30,10 @@ namespace swe
             model->render(windowSize, currentShader, o->getComponent<Transform>()->getModelMatrix(), glm::mat4(1.0f)); //currentCamera->getViewMatrix()
         }
     }
+
+    void Scene::update()
+    {
+        for (object_ptr o : objects)
+            o->update();
+    }
 }

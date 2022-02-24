@@ -4,6 +4,7 @@
 #include <SWE/Components/transform.h>
 #include <SWE/Engine/vector.h>
 #include <SWE/Engine/scene.h>
+#include <SWE/Engine/error.h>
 
 namespace swe
 {
@@ -239,8 +240,9 @@ namespace swe
 	{
 		if (type == rttr::type::get_by_name("Vector3"))
 		{
-			rttr::instance wrapper = *(glm::vec3**)ptr;
-			rttr::instance inst = wrapper.try_convert<glm::vec3>();
+			rttr::instance inst = *(glm::vec3**)ptr;
+			auto err = Error("Instancing for Vector3 may not be working.", errorLevel::Warning, __SOURCELOCATION__);
+			//rttr::instance inst = wrapper.try_convert<glm::vec3>();
 
 			return inst;
 		}

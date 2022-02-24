@@ -28,8 +28,6 @@ namespace swe
         delete position;
         delete rotation;
         delete scale;
-
-        std::cout << "Transform died" << std::endl;
     }
 
     compType Transform::getType() const
@@ -41,11 +39,11 @@ namespace swe
     {
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::scale(model, *scale);
+        model = glm::translate(model, *position);
         model = glm::rotate(model, glm::radians(rotation->x), xAxis);
         model = glm::rotate(model, glm::radians(rotation->y), yAxis);
         model = glm::rotate(model, glm::radians(rotation->z), zAxis);
-        model = glm::translate(model, *position);
-
+        
         return model;
     }
 }

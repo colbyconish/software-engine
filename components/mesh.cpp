@@ -14,6 +14,9 @@ namespace swe
 
     mesh_ptr Mesh::createMesh(std::vector<Vertex> verts, std::vector<uint32_t> indis, Texture texture)
     {
+        if (texture.ID == -1)
+            std::cout << "Mesh does not have texture." << std::endl;
+
         return mesh_ptr(new Mesh(verts, indis, texture));
     }
 
@@ -54,7 +57,9 @@ namespace swe
         shader.setMat4("model", model);
         shader.setMat4("view", view);
         shader.setMat4("projection", glm::perspective(glm::radians(POV), (float)windowSize.width / (float)windowSize.height, 0.1f, 100.0f));
-        shader.setInt("material.diffuse", texture.ID);
+
+        if (texture.ID != -1)
+            shader.setInt("material.diffuse", texture.ID);     
 
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, (GLsizei) indices.size(), GL_UNSIGNED_INT, (const GLvoid *) 0);

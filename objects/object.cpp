@@ -27,13 +27,61 @@ namespace swe
         addComponent(std::shared_ptr<Transform>(new Transform()));
     }
 
-    Object::~Object() { printf("%s\n", "Object died"); }
+    Object::~Object() { }
 
-    void Object::update() {}
+    void Object::update() 
+    {
+        transform_ptr t = getComponent<Transform>();
+        t->rotation->x += 1.0f;
+
+        t->position->x = (float) sin(glfwGetTime());
+    }
 
     object_ptr Object::createObject()
     {
-        return object_ptr(new Object(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f)));
+        return object_ptr(new Object());
+    }
+
+    object_ptr Object::createPrimitive(primitiveType p)
+    {
+        object_ptr obj = object_ptr(new Object());
+        model_ptr model = Model::createModel();
+        obj->addComponent(model);
+
+        std::vector<Vertex> verts;
+        std::vector<uint32_t> indis;
+
+        switch (p)
+        {
+        case primitiveType::Cube:
+            verts = {
+                Vertex{glm::vec3(-0.5f, -0.5f, 0.5f), glm::vec2(0.0f, 0.0f)}, Vertex{glm::vec3(0.5f, -0.5f, 0.5f), glm::vec2(1.0f, 0.0f)},
+                Vertex{glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec2(0.0f, 1.0f)}, Vertex{glm::vec3(0.5f, 0.5f, 0.5f), glm::vec2(1.0f, 1.0f)},
+                Vertex{glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(0.0f, 1.0f)}, Vertex{glm::vec3(0.5f, -0.5f, -0.5f), glm::vec2(0.0f, 0.0f)},
+                Vertex{glm::vec3(-0.5f, 0.5f, -0.5f), glm::vec2(1.0f, 1.0f)}, Vertex{glm::vec3(0.5f, 0.5f, -0.5f), glm::vec2(0.0f, 1.0f)},
+                Vertex{glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec2(1.0f, 0.0f)}, //[2] copy
+                Vertex{glm::vec3(0.5f, 0.5f, -0.5f), glm::vec2(1.0f, 0.0f)}, //[7] copy
+                Vertex{glm::vec3(-0.5f, 0.5f, -0.5f), glm::vec2(0.0f, 0.0f)},//[6] copy
+                Vertex{glm::vec3(-0.5f, -0.5f, 0.5f), glm::vec2(1.0f, 1.0f)} //[0] copy
+            };
+
+            indis = {
+                0, 1, 2,   1, 3, 2,  //Front
+                5, 4, 9,   4, 6, 9,  //Back
+                4, 5, 11,  5, 1, 11, //Top
+                8, 3, 10,  3, 7, 10, //Bottom
+                4, 0, 6,   0, 8, 6,  //Left
+                1, 5, 3,   5, 7, 3   //Right
+            };
+            break;
+        default:
+            std::cout << "Primitive not supported." << std::endl;
+        }
+
+        mesh_ptr mesh = Mesh::createMesh(verts, indis);
+        model->addMesh(mesh);
+
+        return obj;
     }
 
     std::shared_ptr<Component> Object::luaGetComponent(const char* t) const

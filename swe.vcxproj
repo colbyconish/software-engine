@@ -132,7 +132,8 @@
       <ConformanceMode>false</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -155,6 +156,8 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -172,6 +175,7 @@
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Components\shader.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Components\texture.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Components\transform.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\application.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\error.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\luaController.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\menu.h" />
@@ -192,10 +196,11 @@
     <ClCompile Include="components\shader.cpp" />
     <ClCompile Include="components\texture.cpp" />
     <ClCompile Include="components\transform.cpp" />
+    <ClCompile Include="engine\application.cpp" />
     <ClCompile Include="engine\luaController.cpp" />
     <ClCompile Include="engine\scene.cpp" />
     <ClCompile Include="engine\menu.cpp" />
-    <ClCompile Include="engine\Error.cpp" />
+    <ClCompile Include="engine\error.cpp" />
     <ClCompile Include="engine\window.cpp" />
     <ClCompile Include="glad.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>

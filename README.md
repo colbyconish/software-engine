@@ -7,14 +7,14 @@
 	<li>GLM</li>
 	<li>STB</li>
 	<li>LUA</li>
-	<li>RTTR</li>
+	<li>RTTR (editted .h files)</li>
 	<li>FREETYPE</li>
 </ul>
 
 <p>We have a <a href="https://trello.com/b/nJ8ITIK7/software-engine-swe">trello board</a> with all our current milestones.</p>
 
 #Starter Example : main.cpp
-<code>
+	```c++
 	int main()
 	{
 		//create window
@@ -67,8 +67,7 @@
 		Window::Main();
 		return 0;
 	}
-</code>
-	
+	```
 
 # NOTES 
 Tab separators can be added to the top level menu but are not displayed.
