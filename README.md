@@ -15,33 +15,33 @@
 
 <h1>Starter Example : main.cpp</h1>
 
-	```cpp
-	#include <SWE/swe.h>
+```cpp
+#include <SWE/swe.h>
 
-	using namespace swe;
+using namespace swe;
 
-	int main()
-	{
-		Application::Init();
-		window_ptr main = Application::createWindow(1000, 800, "Game Test", 0, 0, false);
+int main()
+{
+	Application::Init();
+	window_ptr main = Application::createWindow(1000, 800, "Game Test", 0, 0, false);
 
-		main->makeCurrent();//glad needs a current context to init
-		Application::initGLAD();
+	main->makeCurrent();//glad needs a current context to init
+	Application::initGLAD();
 
-		//Create test cube
-		object_ptr cube = Object::createPrimitive(primitiveType::Cube);
-		transform_ptr t = cube->getComponent<Transform>();
-		t->position->z = -3.0f;
+	//Create test cube
+	object_ptr cube = Object::createPrimitive(primitiveType::Cube);
+	transform_ptr t = cube->getComponent<Transform>();
+	t->position->z = -3.0f;
 
-		//Create scene
-		scene_ptr scene = Scene::createScene();
-		scene->background_color = glm::vec4(0.8f, 0.8f, 0.8f, 1.0f);
-		scene->addObject(cube);
+	//Create scene
+	scene_ptr scene = Scene::createScene();
+	scene->background_color = glm::vec4(0.8f, 0.8f, 0.8f, 1.0f);
+	scene->addObject(cube);
 
-		//Load scene
-		main->loadScene(scene);
+	//Load scene
+	main->loadScene(scene);
 
-		Application::Main();
-		return 0;
-	}
-	```
+	Application::Main();
+	return 0;
+}
+```
