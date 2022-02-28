@@ -20,14 +20,16 @@ namespace swe
 
     void Scene::render(Dimensions windowSize)
     {
-        //if (currentCamera == nullptr)
-            //return;
+        if (currentCamera == nullptr)
+            return;
         for (object_ptr o : objects)
         {
-            std::shared_ptr<Model> model = o->getComponent<Model>();
+            std::shared_ptr<Model> model = nullptr;
+            if (o->visible)
+                model = o->getComponent<Model>();
             if (model == nullptr)
                 continue;
-            model->render(windowSize, currentShader, o->getComponent<Transform>()->getModelMatrix(), glm::mat4(1.0f)); //currentCamera->getViewMatrix()
+            model->render(windowSize, currentShader, o->getComponent<Transform>()->getModelMatrix(), currentCamera->getViewMatrix());
         }
     }
 

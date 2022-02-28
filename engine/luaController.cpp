@@ -4,6 +4,7 @@
 #include <SWE/Components/transform.h>
 #include <SWE/Engine/vector.h>
 #include <SWE/Engine/scene.h>
+#include <SWE/Components/script.h>
 #include <SWE/Engine/error.h>
 
 namespace swe
@@ -70,6 +71,16 @@ namespace swe
 				setMetaTableInfo(ID, typeName);
 			}
 		}
+	}
+
+	bool LuaController::checkInit()
+	{
+		bool inited = ID != nullptr;
+
+		if (!inited)
+			Error err = Error("LuaController is not initialized.", errorLevel::Error, __SOURCELOCATION__);
+
+		return inited;
 	}
 
 	std::string LuaController::metaName(rttr::type type)
@@ -198,8 +209,18 @@ namespace swe
 			lua_pushnumber(ls, result.get_value<float>());
 			return true;
 		}
+		else if (result.is_type<lua_CFunction>())
+		{
+			lua_pushcfunction(ls, result.get_value<lua_CFunction>());
+			return true;
+		}
+		else if (result.is_type<Object *>())
+		{
+			if (pushSharedToLua<object_ptr, Object *>(ls, result)) { return true; }
+		}
 		else
 		{
+			Error err = Error("Return value may be incorrectly interpreted.", errorLevel::Warning, __SOURCELOCATION__);
 			/*
 			* for all datatype stored in shared_ptrs or regular pointers
 			* glm::vec3 is stored in a regular ptr 
@@ -241,8 +262,6 @@ namespace swe
 		if (type == rttr::type::get_by_name("Vector3"))
 		{
 			rttr::instance inst = *(glm::vec3**)ptr;
-			auto err = Error("Instancing for Vector3 may not be working.", errorLevel::Warning, __SOURCELOCATION__);
-			//rttr::instance inst = wrapper.try_convert<glm::vec3>();
 
 			return inst;
 		}
@@ -250,7 +269,7 @@ namespace swe
 		{
 			rttr::instance wrapper = (*(object_ptr*)ptr);
 			rttr::instance inst = wrapper.get_wrapped_instance();
-			
+
 			return inst;
 		}
 		else if (type == rttr::type::get_by_name("Transform"))
@@ -260,8 +279,15 @@ namespace swe
 
 			return inst;
 		}
+		else if (type == rttr::type::get_by_name("Script"))
+		{
+			rttr::instance wrapper = (*(script_ptr*)ptr);
+			rttr::instance inst = wrapper.get_wrapped_instance();
+
+			return inst;
+		}
 		else
-			std::cout << "Instancing not supported for " << type.get_name().data() << std::endl;
+			Error err = Error("Instancing not supported for " + type.get_name().to_string(), errorLevel::Error, __SOURCELOCATION__);
 
 		return rttr::instance();
 	}
@@ -358,7 +384,8 @@ namespace swe
 			return 0;
 			break;
 		case LUA_TFUNCTION:
-			std::cout << "No support for fucntion arguments." << std::endl;
+			if (tryArgument<int>(paramType, &(values[i]), &(args[i]), luaL_ref(ls, LUA_REGISTRYINDEX))) { return 1; }
+			else Error err = Error("Function used unsupported function type.", errorLevel::Error, __SOURCELOCATION__);
 			return 0;
 			break;
 		case LUA_TUSERDATA:
@@ -398,14 +425,49 @@ namespace swe
 		return invokeLuaMethods(ls, method, instance);
 	}
 
+	void LuaController::callFunction()
+	{
+		if (checkInit())
+			if (lua_pcall(ID, 0, 0, 0) != 0)
+				Error err = Error("Error running function: " + std::string(lua_tostring(ID, -1)), errorLevel::Error, __SOURCELOCATION__);
+	}
+
+	void LuaController::setGlobal(std::string name)
+	{
+		if (checkInit())
+			lua_setglobal(ID, name.c_str());
+	}
+
+	void LuaController::pushRegistryIndex(int r)
+	{
+		if (checkInit())
+			lua_rawgeti(ID, LUA_REGISTRYINDEX, r);
+	}
+
+	void LuaController::unrefRegistryIndex(int r)
+	{
+		if(checkInit())
+			luaL_unref(ID, LUA_REGISTRYINDEX, r);
+	}
+
+	void LuaController::pushNil()
+	{
+		if (checkInit())
+			lua_pushnil(ID);
+	}
+
 	void LuaController::close()
 	{
-		lua_close(ID);
+		if (checkInit())
+			lua_close(ID);
 		ID = nullptr;
 	}
 
 	int32_t LuaController::runFile(std::string fileLocation)
 	{
+		if (!checkInit())
+			return -1;
+
 		printf("START Output--%s----------\n", fileLocation.c_str());
 		int32_t err = luaL_dofile(ID, fileLocation.c_str());
 		if (err != LUA_OK)
@@ -419,11 +481,15 @@ namespace swe
 
 	int32_t LuaController::runString(std::string code)
 	{
+		if (!checkInit())
+			return -1;
 		return luaL_dostring(ID, code.c_str());
 	}
 
 	std::string LuaController::popString(int32_t index)
 	{
+		if (!checkInit())
+			return "";
 		return lua_tostring(ID, index);
 	}
 
@@ -446,6 +512,10 @@ namespace swe
 		.property("position", &Transform::position)
 		.property("rotation", &Transform::rotation)
 		.property("scale", &Transform::scale);
+	rttr::registration::class_<script_ptr>("script_ptr");
+	rttr::registration::class_<Script>("Script")
+		.property("parent", &Script::parent)
+		.property("onUpdate", &Script::onUpdate);
 
 	//Object class
 	rttr::registration::class_<object_ptr>("object_ptr");

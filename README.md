@@ -13,7 +13,7 @@
 
 <p>We have a <a href="https://trello.com/b/nJ8ITIK7/software-engine-swe">trello board</a> with all our current milestones.</p>
 
-#Starter Example : main.cpp
+<h1>Starter Example : main.cpp</h1>
 
 	```cpp
 	#include <SWE/swe.h>

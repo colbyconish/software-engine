@@ -119,13 +119,13 @@
     <ClCompile Include="engine\luaController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="script.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="components\transform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="engine\application.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="components\script.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

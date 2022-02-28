@@ -206,7 +206,7 @@ namespace swe{
 
         "void main()\n"
         "{\n"
-            "gl_Position = projection * model * view * vec4(aPos, 1.0);\n"
+            "gl_Position = projection * view * model * vec4(aPos, 1.0);\n"
             "TexCoord = aTexCoord;\n"
         " }\n";
 

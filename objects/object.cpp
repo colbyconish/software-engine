@@ -3,6 +3,7 @@
 #include <SWE/Components/transform.h>
 #include <SWE/Components/model.h>
 #include <SWE/Components/script.h>
+#include <SWE/Engine/error.h>
 
 namespace swe
 {
@@ -18,11 +19,13 @@ namespace swe
     }
 
     Object::Object(glm::vec3 pos, glm::vec3 rot, glm::vec3 s)
+        : visible(true)
     {
         addComponent(std::shared_ptr<Transform>(new Transform(pos, rot, s)));
     }
 
     Object::Object() 
+        : visible(true)
     {
         addComponent(std::shared_ptr<Transform>(new Transform()));
     }
@@ -31,10 +34,8 @@ namespace swe
 
     void Object::update() 
     {
-        transform_ptr t = getComponent<Transform>();
-        t->rotation->x += 1.0f;
-
-        t->position->x = (float) sin(glfwGetTime());
+        for (auto c : components)
+            c.second->update();
     }
 
     object_ptr Object::createObject()
@@ -114,7 +115,7 @@ namespace swe
         compType type = comp->getType();
         if (type == compType::base)
         {
-            std::cout << "Passed in unusable component." << std::endl;
+            Error err = Error("Passed in unusable component.", errorLevel::Error, __SOURCELOCATION__);
             return 0;
         }   
 
@@ -123,14 +124,22 @@ namespace swe
         {
             std::pair<compType, std::shared_ptr<Component>> pair(type, comp);
             components.insert(pair);
+
+            comp->parent = this;
+            comp->init();
             return 1;
         }
         else
         {
+            it->second->parent = nullptr;
             it->second = comp;
+
+            comp->parent = this;
+            comp->init();
             return 1;
         }
 
+        comp->parent = this;
         return 0;
     }
 

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include <SWE/Engine/application.h>
+#include <SWE/Engine/luaController.h>
 #include <iostream>
 
 
@@ -19,6 +20,7 @@ namespace swe
     void Application::Init()
     {
         initGLFW();
+        LuaController::init();
     }
 
     void Application::Main()
@@ -48,7 +50,7 @@ namespace swe
             {
                 if (!windows[i]->shouldClose())
                 {
-                    glfwPollEvents();
+                    glfwWaitEvents();
                     windows[i]->processInput();
                     windows[i]->endLoop();
                 }
@@ -60,6 +62,7 @@ namespace swe
             }
         }
 
+        LuaController::close();
         glfwTerminate();
     }
 

@@ -3,10 +3,23 @@
 
 namespace swe
 {
+    camera_ptr Camera::createCamera()
+    {
+        return camera_ptr(new Camera());
+    }
+
+    Camera::Camera(glm::vec3 up)
+        : Object(glm::vec3(0.0f), glm::vec3(0, YAW, 0), glm::vec3(1.0f)), worldUp(up)
+    {
+        update();
+        visible = false;
+    }
+
     Camera::Camera(glm::vec3 pos, glm::vec3 rot, glm::vec3 s, glm::vec3 up)
         : Object(pos, rot + glm::vec3(0, YAW, 0), s), worldUp(up)
     {
         update();
+        visible = false;
     }
 
     void Camera::update()

@@ -3,9 +3,13 @@
 
 namespace swe
 {
-    Component::Component() {}
+    Component::Component() :parent(nullptr) {}
 
     Component::~Component() {}
+
+    void Component::init() {}
+
+    void Component::update() {}
 
     compType Component::getType() const
     {

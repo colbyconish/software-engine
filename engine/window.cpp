@@ -1,6 +1,7 @@
 #include "pch.h"
 #include <SWE/Engine/window.h>
 #include <SWE/Engine/application.h>
+#include <SWE/Engine/error.h>
 #include <future>
 
 namespace swe
@@ -24,9 +25,6 @@ namespace swe
         }
 
         setMenu(menu);
-
-        glfwSetFramebufferSizeCallback(ID, framebuffer_size_callback);
-        glfwSetCursorPosCallback(ID, mouse_callback);
 
 #ifdef _WIN64
         SetWindowSubclass(getNativeID(), &Window::Subclassproc, (UINT_PTR) this, 0);
@@ -156,6 +154,8 @@ namespace swe
         while (!win->shouldClose())
         {
             double start = glfwGetTime();
+            //Dimensions d = win->getDimensions();
+            //glViewport(0, 0, d.width, d.height);
             win->renderScene();
             win->updateScene();
             win->swapBuffers();
@@ -196,11 +196,6 @@ namespace swe
             return;
 
         current_scene->update();
-    }
-
-    void Window::framebuffer_size_callback(GLFWwindow *window, int width, int height)
-    {
-        glViewport(0, 0, width, height);
     }
 
     void Window::mouse_callback(GLFWwindow *window, double xpos, double ypos) {}

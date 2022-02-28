@@ -1,6 +1,7 @@
 #include "pch.h"
 #include <SWE/Components/mesh.h>
 #include <GLM/gtc/matrix_transform.hpp>
+#include <SWE/Engine/error.h>
 
 #define POV 45.0f
 
@@ -56,7 +57,7 @@ namespace swe
         shader.use();
         shader.setMat4("model", model);
         shader.setMat4("view", view);
-        shader.setMat4("projection", glm::perspective(glm::radians(POV), (float)windowSize.width / (float)windowSize.height, 0.1f, 100.0f));
+        shader.setMat4("projection", glm::perspective(glm::radians(POV), (float)windowSize.width / (float)windowSize.height, 0.1f, 1000.0f));
 
         if (texture.ID != -1)
             shader.setInt("material.diffuse", texture.ID);     
