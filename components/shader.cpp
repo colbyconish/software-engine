@@ -5,23 +5,32 @@
 #include <fstream>
 #include <sstream>
 #include <SWE/Components/shader.h>
+#include <SWE/Engine/error.h>
 
+#define VSPATH "shaders/default.vs"
+#define FSPATH "shaders/default.fs"
+#define GSPATH "shaders/default.gs"
+#define LFSPATH "shaders/light.fs"
 
 namespace swe{
 
     uint32_t Shader::shaderInUse = 0;
     Shader Shader::defaultShader = Shader(0);
+    Shader Shader::lightShader = Shader(0);
 
     Shader::Shader(uint32_t ID) : ID(ID) {}
 
-    Shader Shader::fromFile(const char *vertexPath, const char *fragmentPath)
+    Shader Shader::fromFile(const char *vertexPath, const char *fragmentPath, const char* geometryPath)
     {
         std::string vertexCode;
+        std::string geometryCode;
         std::string fragmentCode;
         std::ifstream vShaderFile;
+        std::ifstream gShaderFile;
         std::ifstream fShaderFile;
 
         vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+        gShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
         fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
         try
@@ -42,6 +51,16 @@ namespace swe{
             // convert stream into string
             vertexCode = vShaderStream.str();
             fragmentCode = fShaderStream.str();
+
+            if (geometryPath != nullptr)
+            {
+                gShaderFile.open(geometryPath);
+                std::stringstream gShaderStream;
+
+                gShaderStream << gShaderFile.rdbuf();
+                gShaderFile.close();
+                geometryCode = gShaderStream.str();
+            }
         }
         catch (std::ifstream::failure e)
         {
@@ -55,7 +74,15 @@ namespace swe{
         unsigned int vShader = createShader(GL_VERTEX_SHADER, vShaderCode);
         unsigned int fShader = createShader(GL_FRAGMENT_SHADER, fShaderCode);
         
-        unsigned int id = linkShader(vShader, fShader);
+        unsigned int id;
+        if (geometryPath != nullptr)
+        {
+            const char* gShaderCode = geometryCode.c_str();
+            unsigned int gShader = createShader(GL_GEOMETRY_SHADER, gShaderCode);
+            id = linkShader(vShader, fShader, gShader);
+        }
+        else
+            id = linkShader(vShader, fShader);
 
         // delete the shaders
         glDeleteShader(vShader);
@@ -64,13 +91,22 @@ namespace swe{
         return Shader(id);
     }
 
-    Shader Shader::fromString(const char *vertexCode, const char *fragmentCode)
+    Shader Shader::fromString(const char *vertexCode, const char *fragmentCode, const char* geometryCode)
     {
         //create shaders from code
         unsigned int vShader = createShader(GL_VERTEX_SHADER, vertexCode);
         unsigned int fShader = createShader(GL_FRAGMENT_SHADER, fragmentCode);
 
-        unsigned int id = linkShader(vShader, fShader);
+        unsigned int gShader;
+        unsigned int id;
+        if (geometryCode != nullptr)
+        {
+            gShader = createShader(GL_GEOMETRY_SHADER, geometryCode);
+            id = linkShader(vShader, fShader, gShader);
+            glDeleteShader(gShader);
+        }
+        else
+            id = linkShader(vShader, fShader);
 
         // delete the shaders
         glDeleteShader(vShader);
@@ -82,9 +118,17 @@ namespace swe{
     Shader Shader::getDefaultShader()
     {
         if (defaultShader.ID == 0)
-            defaultShader = fromString(vertexCode, fragmentCode);
+            defaultShader = fromFile(VSPATH, FSPATH, GSPATH);
         
         return defaultShader;
+    }
+
+    Shader Shader::getLightShader()
+    {
+        if (lightShader.ID == 0)
+            lightShader = fromFile(VSPATH, LFSPATH, GSPATH);
+
+        return lightShader;
     }
 
     void Shader::use() const
@@ -103,7 +147,7 @@ namespace swe{
         if (isActive())
             glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
         else
-            std::cout << "Can not change uniform of shader that is not active." << std::endl;
+            Error err = Error("Can not change uniform of shader that is not active.", errorLevel::Error, __SOURCELOCATION__);
     }
 
     void Shader::setInt(const std::string &name, int value) const
@@ -111,7 +155,7 @@ namespace swe{
         if (isActive())
             glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
         else
-            std::cout << "Can not change uniform of shader that is not active." << std::endl;
+            Error err = Error("Can not change uniform of shader that is not active.", errorLevel::Error, __SOURCELOCATION__);
     }
 
     void Shader::setFloat(const std::string &name, float value) const
@@ -119,7 +163,23 @@ namespace swe{
         if (isActive())
             glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
         else
-            std::cout << "Can not change uniform of shader that is not active." << std::endl;
+            Error err = Error("Can not change uniform of shader that is not active.", errorLevel::Error, __SOURCELOCATION__);
+    }
+
+    void Shader::setVec3(const std::string& name, glm::vec3 vec) const
+    {
+        if (isActive())
+            glUniform3f(glGetUniformLocation(ID, name.c_str()), vec.x, vec.y, vec.z);
+        else
+            Error err = Error("Can not change uniform of shader that is not active.", errorLevel::Error, __SOURCELOCATION__);
+    }
+
+    void Shader::setVec3(const std::string& name, float x, float y, float z) const
+    {
+        if (isActive())
+            glUniform3f(glGetUniformLocation(ID, name.c_str()), x, y, z);
+        else
+            Error err = Error("Can not change uniform of shader that is not active.", errorLevel::Error, __SOURCELOCATION__);
     }
 
     void Shader::setVec4(const std::string &name, float x, float y, float z, float w) const
@@ -127,7 +187,7 @@ namespace swe{
         if (isActive())
             glUniform4f(glGetUniformLocation(ID, name.c_str()), x, y, z, w);
         else
-            std::cout << "Can not change uniform of shader that is not active." << std::endl;
+            Error err = Error("Can not change uniform of shader that is not active.", errorLevel::Error, __SOURCELOCATION__);
     }
 
     void Shader::setMat4(const std::string &name, glm::mat4 matrix) const
@@ -135,7 +195,20 @@ namespace swe{
         if (isActive())
             glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(matrix));
         else
-            std::cout << "Can not change uniform of shader that is not active." << std::endl;
+            Error err = Error("Can not change uniform of shader that is not active.", errorLevel::Error, __SOURCELOCATION__);
+    }
+
+    void Shader::setDLight(const std::string& name, DirectionalLight* dl) const
+    {
+        if (isActive())
+        {
+            glUniform3f(glGetUniformLocation(ID, (name+".direction").c_str()), dl->direction->x, dl->direction->y, dl->direction->z);
+            glUniform3f(glGetUniformLocation(ID, (name + ".ambient").c_str()), dl->ambient->x, dl->ambient->y, dl->ambient->z);
+            glUniform3f(glGetUniformLocation(ID, (name + ".diffuse").c_str()), dl->diffuse->x, dl->diffuse->y, dl->diffuse->z);
+            glUniform3f(glGetUniformLocation(ID, (name + ".specular").c_str()), dl->specular->x, dl->specular->y, dl->specular->z);
+        }
+        else
+            Error err = Error("Can not change uniform of shader that is not active.", errorLevel::Error, __SOURCELOCATION__);
     }
 
     unsigned int Shader::createShader(unsigned int type, const char *code)
@@ -169,6 +242,31 @@ namespace swe{
         return shader;
     }
 
+    unsigned int Shader::linkShader(unsigned int vShader, unsigned int fShader, unsigned int gShader)
+    {
+
+        //create shader program
+        unsigned int id = glCreateProgram();
+
+        glAttachShader(id, vShader);
+        glAttachShader(id, gShader);
+        glAttachShader(id, fShader);
+        glLinkProgram(id);
+
+        //linking error checking
+        int success;
+        char infoLog[512];
+        glGetProgramiv(id, GL_LINK_STATUS, &success);
+        if (!success)
+        {
+            glGetProgramInfoLog(id, 512, NULL, infoLog);
+            std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
+                << infoLog << std::endl;
+        }
+
+        return id;
+    }
+
     unsigned int Shader::linkShader(unsigned int vShader, unsigned int fShader)
     {
 
@@ -191,40 +289,5 @@ namespace swe{
         }
 
         return id;
-    }
-
-    const char* Shader::vertexCode = 
-        "#version 330 core\n"
-        "layout(location = 0) in vec3 aPos;\n"
-        "layout(location = 1) in vec2 aTexCoord;\n"
-
-        "out vec2 TexCoord;\n"
-
-        "uniform mat4 model;\n"
-        "uniform mat4 view;\n"
-        "uniform mat4 projection;\n"
-
-        "void main()\n"
-        "{\n"
-            "gl_Position = projection * view * model * vec4(aPos, 1.0);\n"
-            "TexCoord = aTexCoord;\n"
-        " }\n";
-
-    const char* Shader::fragmentCode =
-        "#version 330 core\n"
-        "struct Material\n"
-        "{\n"
-        "    sampler2D diffuse;\n"
-        "    sampler2D specular;\n"
-        "};\n"
-
-        "in vec2 TexCoord;\n"
-        "out vec4 FragColor;\n"
-
-        "uniform Material material;\n"
-
-        "void main()\n"
-        "{\n"
-        "    FragColor = texture(material.diffuse, TexCoord);\n"
-        "}\n";
+    } 
 }

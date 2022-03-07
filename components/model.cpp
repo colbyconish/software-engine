@@ -19,10 +19,10 @@ namespace swe
         meshes.push_back(mesh);
     }
 
-    void Model::render(Dimensions windowSize, Shader &shader, glm::mat4 model, glm::mat4 view)
+    void Model::render(Shader *shader)
     {
         for (mesh_ptr mesh : meshes)
-            mesh->draw(windowSize, shader, model, view);
+            mesh->draw(shader);
     }
 
     compType Model::getType() const

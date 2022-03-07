@@ -67,16 +67,16 @@ namespace swe
             };
 
             indis = {
-                0, 1, 2,   1, 3, 2,  //Front
-                5, 4, 9,   4, 6, 9,  //Back
-                4, 5, 11,  5, 1, 11, //Top
-                8, 3, 10,  3, 7, 10, //Bottom
-                4, 0, 6,   0, 8, 6,  //Left
-                1, 5, 3,   5, 7, 3   //Right
+                2, 0, 1,   2, 1, 3,  //Front
+                4, 9, 5,   4, 6, 9,  //Back
+                11, 4, 5,  11, 5, 1, //Top
+                10, 8, 3,  10, 3, 7, //Bottom
+                0, 6, 4,   0, 8, 6,  //Left
+                5, 3, 1,   5, 7, 3   //Right
             };
             break;
         default:
-            std::cout << "Primitive not supported." << std::endl;
+            Error err = Error("Primitive not supported.", errorLevel::Error, __SOURCELOCATION__);
         }
 
         mesh_ptr mesh = Mesh::createMesh(verts, indis);

@@ -169,6 +169,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Components\component.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Components\light.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Components\mesh.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Components\model.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Components\script.h" />
@@ -191,6 +192,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="components\component.cpp" />
+    <ClCompile Include="components\light.cpp" />
     <ClCompile Include="components\mesh.cpp" />
     <ClCompile Include="components\model.cpp" />
     <ClCompile Include="components\script.cpp" />

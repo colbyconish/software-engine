@@ -9,14 +9,18 @@ namespace swe
     Window::Window(int width, int height, const char *title,
                    GLFWmonitor *monitor, GLFWwindow *window,
                    bool resizable, Menu menu)
-        : deltaTime(0.0f), lastFrame(0.0f), ID(nullptr), current_scene(nullptr)
+        : deltaTime(0.0f), lastFrame(0.0f), ID(nullptr), resize(Dimensions{-1,-1}), current_scene(nullptr)
     {
         //setting window hints
         //GLFW_SCALE_TO_MONITOR
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
         resizable ? glfwWindowHint(GLFW_RESIZABLE, GL_TRUE) : glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
         ID = glfwCreateWindow(width, height, title, monitor, window);
-
+        
         if (ID == NULL)
         {
             std::cout << "Failed to create GLFW window" << std::endl;
@@ -26,8 +30,12 @@ namespace swe
 
         setMenu(menu);
 
+        glfwSetWindowSizeCallback(ID, window_size_callback);
+        glfwSetFramebufferSizeCallback(ID, framebuffer_size_callback);
+        glfwSetMouseButtonCallback(ID, mouse_button_callback);
+
 #ifdef _WIN64
-        SetWindowSubclass(getNativeID(), &Window::Subclassproc, (UINT_PTR) this, 0);
+        //SetWindowSubclass(getNativeID(), &Window::Subclassproc, (UINT_PTR) this, 0);
 #endif
 #ifdef __APPLE__
 #endif
@@ -141,6 +149,13 @@ namespace swe
         return size;
     }
 
+    Dimensions Window::getFrameBufferSize() const
+    {
+        Dimensions size;
+        glfwGetFramebufferSize(ID, &size.width, &size.height);
+        return size;
+    }
+
     GLFWmonitor* Window::currentMonitor()
     {
         return glfwGetPrimaryMonitor();
@@ -149,20 +164,22 @@ namespace swe
     void Window::thread_main(Window* win)
     {
         win->makeCurrent();
+        glfwSwapInterval(1);
         Application::initGLAD(); 
 
         while (!win->shouldClose())
         {
             double start = glfwGetTime();
-            //Dimensions d = win->getDimensions();
-            //glViewport(0, 0, d.width, d.height);
+            if (win->resize.width > -1 || win->resize.height > -1)
+                glViewport(0, 0, win->resize.width, win->resize.height);
+
             win->renderScene();
             win->updateScene();
             win->swapBuffers();
             double elapsed = glfwGetTime() - start;
 
             //frame capping
-            std::this_thread::sleep_for(std::chrono::milliseconds((int)((Application::getFpsCap() - elapsed)*1000)));
+            //std::this_thread::sleep_for(std::chrono::milliseconds((int)((Application::getFpsCap() - elapsed)*1000)));
         }
     }
 
@@ -187,7 +204,7 @@ namespace swe
             return;
 
         drawBackground(current_scene->background_color);
-        current_scene->render(getDimensions());
+        current_scene->render(getFrameBufferSize());
     }
 
     void Window::updateScene()
@@ -198,8 +215,21 @@ namespace swe
         current_scene->update();
     }
 
-    void Window::mouse_callback(GLFWwindow *window, double xpos, double ypos) {}
+    void Window::mouse_button_callback(GLFWwindow *window, int button, int action, int mods) 
+    {
+        
+    }
 
+    void Window::window_size_callback(GLFWwindow* window, int width, int height)
+    {
+        
+    }
+
+    void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height)
+    {
+        Window* win = Application::getWindow(window);
+        win->resize = Dimensions{width, height};
+    }
     //
     //Native Functions
     //
@@ -236,9 +266,31 @@ namespace swe
         case WM_COMMAND:
             std::async([window](WPARAM wp) { window->callMenuCallback(wp);}, wParam);
             return 0;
+            break;
         case WM_CLOSE:
             window->close();
             return 1;
+            break;
+        case WM_SIZE:
+        {
+            UINT width = LOWORD(lParam);
+            UINT height = HIWORD(lParam);
+
+            window_size_callback(window->ID, width, height);
+            framebuffer_size_callback(window->ID, width, height);
+            return 1;
+        }
+        case WM_LBUTTONDOWN:
+        case WM_LBUTTONUP:
+        {
+            int xPos = GET_X_LPARAM(lParam);
+            int yPos = GET_Y_LPARAM(lParam);
+            int button = (uMsg == WM_LBUTTONDOWN ? GLFW_PRESS : GLFW_RELEASE);
+
+            mouse_button_callback(window->ID, GLFW_MOUSE_BUTTON_LEFT, button, 0x0);
+            return 0;
+        }
+            break;
         default:
             return DefWindowProc(hWnd, uMsg, wParam, lParam);
         }          

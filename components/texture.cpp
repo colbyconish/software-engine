@@ -43,10 +43,11 @@ namespace swe
         glBindTexture(GL_TEXTURE_2D, id);
 
         int width, height, nrChannels;
+        stbi_set_flip_vertically_on_load(true);
         unsigned char* data = stbi_load(fileLocation.c_str(), &width, &height, &nrChannels, 0);
         if (data)
         {
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
             glGenerateMipmap(GL_TEXTURE_2D);
         }
         else
@@ -59,8 +60,7 @@ namespace swe
         active_textures.emplace(fileLocation, offset);
 
         auto info = Error(fileLocation+" loaded into "+std::to_string((int)offset), errorLevel::Info, __SOURCELOCATION__);
-        Texture t = Texture(offset, fileLocation, type);
-        return t;
+        return Texture(offset, fileLocation, type);
     }
 
     void Texture::unload()

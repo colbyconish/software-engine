@@ -3,22 +3,20 @@
 #include <GLM/gtc/matrix_transform.hpp>
 #include <SWE/Engine/error.h>
 
-#define POV 45.0f
-
 namespace swe
 {
-    Mesh::Mesh(std::vector<Vertex> verts, std::vector<unsigned int> indis, Texture texture)
-        : vertices(verts), indices(indis), texture(texture)
+    Mesh::Mesh(std::vector<Vertex> verts, std::vector<unsigned int> indis, Texture d, Texture s)
+        : vertices(verts), indices(indis), diffuse(d), specular(s)
     {
         generateBuffers();
     }
 
-    mesh_ptr Mesh::createMesh(std::vector<Vertex> verts, std::vector<uint32_t> indis, Texture texture)
+    mesh_ptr Mesh::createMesh(std::vector<Vertex> verts, std::vector<uint32_t> indis, Texture d, Texture s)
     {
-        if (texture.ID == -1)
+        if (d.ID == -1 || s.ID == -1)
             std::cout << "Mesh does not have texture." << std::endl;
 
-        return mesh_ptr(new Mesh(verts, indis, texture));
+        return mesh_ptr(new Mesh(verts, indis, d, s));
     }
 
     void Mesh::generateBuffers()
@@ -52,15 +50,16 @@ namespace swe
         glDeleteBuffers(1, &EBO);
     }
 
-    void Mesh::draw(Dimensions windowSize, Shader &shader, glm::mat4 model, glm::mat4 view) const
+    void Mesh::draw(Shader *shader) const
     {
-        shader.use();
-        shader.setMat4("model", model);
-        shader.setMat4("view", view);
-        shader.setMat4("projection", glm::perspective(glm::radians(POV), (float)windowSize.width / (float)windowSize.height, 0.1f, 1000.0f));
+        if (diffuse.ID != -1)
+            shader->setInt("material.diffuse", diffuse.ID);
 
-        if (texture.ID != -1)
-            shader.setInt("material.diffuse", texture.ID);     
+        if (specular.ID != -1)
+            shader->setInt("material.specular", specular.ID);
+
+        shader->setVec3("material.ambient", glm::vec3(0.2f));
+        shader->setFloat("material.shininess", 0.5f);
 
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, (GLsizei) indices.size(), GL_UNSIGNED_INT, (const GLvoid *) 0);

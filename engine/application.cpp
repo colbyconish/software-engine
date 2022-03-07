@@ -50,7 +50,7 @@ namespace swe
             {
                 if (!windows[i]->shouldClose())
                 {
-                    glfwWaitEvents();
+                    glfwPollEvents();
                     windows[i]->processInput();
                     windows[i]->endLoop();
                 }
@@ -66,11 +66,11 @@ namespace swe
         glfwTerminate();
     }
 
-    window_ptr Application::getWindow(GLFWwindow* id)
+    Window* Application::getWindow(GLFWwindow* id)
     {
         for (std::shared_ptr<Window> win : windows)
             if (win->getID() == id)
-                return win;
+                return win.get();
 
         return nullptr;
     }
