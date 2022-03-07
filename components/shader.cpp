@@ -202,10 +202,11 @@ namespace swe{
     {
         if (isActive())
         {
+            
             glUniform3f(glGetUniformLocation(ID, (name+".direction").c_str()), dl->direction->x, dl->direction->y, dl->direction->z);
-            glUniform3f(glGetUniformLocation(ID, (name + ".ambient").c_str()), dl->ambient->x, dl->ambient->y, dl->ambient->z);
-            glUniform3f(glGetUniformLocation(ID, (name + ".diffuse").c_str()), dl->diffuse->x, dl->diffuse->y, dl->diffuse->z);
-            glUniform3f(glGetUniformLocation(ID, (name + ".specular").c_str()), dl->specular->x, dl->specular->y, dl->specular->z);
+            glUniform3f(glGetUniformLocation(ID, (name + ".ambient").c_str()), dl->ambient->x*dl->color->x, dl->ambient->y*dl->color->y, dl->ambient->z*dl->color->z);
+            glUniform3f(glGetUniformLocation(ID, (name + ".diffuse").c_str()), dl->diffuse->x*dl->color->x, dl->diffuse->y*dl->color->y, dl->diffuse->z*dl->color->z);
+            glUniform3f(glGetUniformLocation(ID, (name + ".specular").c_str()), dl->specular->x*dl->color->x, dl->specular->y*dl->color->y, dl->specular->z*dl->color->z);
         }
         else
             Error err = Error("Can not change uniform of shader that is not active.", errorLevel::Error, __SOURCELOCATION__);

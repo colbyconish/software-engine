@@ -1,5 +1,6 @@
 #include "pch.h"
 #include <SWE/Components/component.h>
+#include <SWE/Engine/error.h>
 
 namespace swe
 {
@@ -22,8 +23,9 @@ namespace swe
         else if (type == "transform" || type == "Transform") return compType::transform;
         else if (type == "model" || type == "Model") return compType::model;
         else if (type == "script" || type == "Script") return compType::script;
+        else if (type == "light" || type == "Light") return compType::light;
 
-        std::cout << "compType string not supported." << std::endl;
+        Error err = Error("compType string not supported.", errorLevel::Error, __SOURCELOCATION__);
         return compType::null;
     }
 

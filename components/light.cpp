@@ -9,7 +9,7 @@ namespace swe
 		color = new glm::vec3(c);
 		ambient = new glm::vec3(0.1f);
 		diffuse = new glm::vec3(0.5f);
-		specular = new glm::vec3(0.5f);
+		specular = new glm::vec3(0.9f);
 	}
 
 	Light::~Light() 
@@ -24,15 +24,6 @@ namespace swe
 		:Light(lightType::directional, c)
 	{
 		direction = new glm::vec3(d);
-	}
-
-	d_light DirectionalLight::getStruct()
-	{
-		return {
-		*direction,
-		*ambient,
-		*diffuse,
-		*specular };
 	}
 
 	DirectionalLight::~DirectionalLight()

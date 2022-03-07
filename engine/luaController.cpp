@@ -279,6 +279,13 @@ namespace swe
 
 			return inst;
 		}
+		else if (type == rttr::type::get_by_name("Light"))
+		{
+			rttr::instance wrapper = (*(light_ptr*)ptr);
+			rttr::instance inst = wrapper.get_wrapped_instance();
+
+			return inst;
+		}
 		else if (type == rttr::type::get_by_name("Script"))
 		{
 			rttr::instance wrapper = (*(script_ptr*)ptr);
@@ -337,7 +344,7 @@ namespace swe
 		{
 			if (!getReturnValue(result, ls))
 			{
-				std::cout << "Unrecognized return type '" << result.get_type().get_name().data() << "' on function '" << name << "'." << std::endl;
+				Error err = Error(std::string("Unrecognized return type '") + result.get_type().get_name().data() + "' on function '" + name + "'.", errorLevel::Error, __SOURCELOCATION__);
 				return 0;
 			}
 			return 1;
@@ -512,6 +519,12 @@ namespace swe
 		.property("position", &Transform::position)
 		.property("rotation", &Transform::rotation)
 		.property("scale", &Transform::scale);
+	rttr::registration::class_<light_ptr>("light_ptr");
+	rttr::registration::class_<Light>("Light")
+		.property("color", &Light::color)
+		.property("ambient", &Light::ambient)
+		.property("diffuse", &Light::diffuse)
+		.property("specular", &Light::specular);
 	rttr::registration::class_<script_ptr>("script_ptr");
 	rttr::registration::class_<Script>("Script")
 		.property("parent", &Script::parent)

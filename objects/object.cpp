@@ -94,17 +94,14 @@ namespace swe
         case compType::transform:
             return getComponent<Transform>();
             break;
-
         case compType::model:
             return getComponent<Model>();
             break;
-
-        case compType::script:
-            return getComponent<Script>();
+        case compType::light:
+            return getComponent<Light>();
             break;
-
         default:
-            std::cout << "Invalid component type in luaGetComponent." << std::endl;
+            Error err = Error("Invalid component type.", errorLevel::Error, __SOURCELOCATION__);
         }
 
         return nullptr;
