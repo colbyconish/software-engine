@@ -46,8 +46,6 @@ int main()
 	return 0;
 }
 ```
-
-<h1>Starter Example</h1>
 <h2>default.vs</h2>
 
 ```glsl
@@ -69,7 +67,6 @@ void main()
     bTexCoord = aTexCoord;
 }
 ```
-<h1>Starter Example</h1>
 <h2>default.gs</h2>
 
 ```glsl
@@ -102,8 +99,6 @@ void main()
     EndPrimitive();
 }
 ```
-
-<h1>Starter Example</h1>
 <h2>default.fs</h2>
 
 ```glsl
