@@ -46,7 +46,7 @@ int main()
 	scene->addObject(cube);
 	scene->addObject(camera);
 	scene->addLight(lightCube);
-    scene->currentCamera = camera;
+	scene->currentCamera = camera;
 
 	//load scene
 	main->loadScene(scene);
