@@ -13,7 +13,8 @@
 
 <p>We have a <a href="https://trello.com/b/nJ8ITIK7/software-engine-swe">trello board</a> with all our current milestones.</p>
 
-<h1>Starter Example : main.cpp</h1>
+<h1>Starter Example</h1>
+<h2>main.cpp</h2>
 
 ```cpp
 #include <SWE/swe.h>
@@ -46,7 +47,8 @@ int main()
 }
 ```
 
-<h1>Starter Example : default.vs</h1>
+<h1>Starter Example</h1>
+<h2>default.vs</h2>
 
 ```glsl
 #version 330 core
@@ -67,7 +69,8 @@ void main()
     bTexCoord = aTexCoord;
 }
 ```
-<h1>Starter Example : default.gs</h1>
+<h1>Starter Example</h1>
+<h2>default.gs</h2>
 
 ```glsl
 #version 330 core
@@ -100,7 +103,8 @@ void main()
 }
 ```
 
-<h1>Starter Example : default.fs</h1>
+<h1>Starter Example</h1>
+<h2>default.fs</h2>
 
 ```glsl
 #version 330 core
