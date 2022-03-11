@@ -23,26 +23,34 @@ using namespace swe;
 int main()
 {
 	Application::Init();
-	window_ptr main = Application::createWindow(1000, 800, "Game Test", 0, 0, false);
+	window_ptr main = Application::createWindow(1000, 800, "Game Test", 0, 0, true);
 
 	main->makeCurrent();//glad needs a current context to init
 	Application::initGLAD();
 
-	//Create test cube
+	//create objects
+	camera_ptr camera = Camera::createCamera();
+	transform_ptr t1 = camera->getComponent<Transform>();
+	t1->position->z = 12.5f;
+
+	object_ptr lightCube = Object::createPrimitive(primitiveType::Cube);
+	light_ptr light = Light::createSpot(glm::vec3(1.0f, 0.5f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), 0.0f, 15.0f);
+	lightCube->addComponent(light);
+
 	object_ptr cube = Object::createPrimitive(primitiveType::Cube);
-	transform_ptr t = cube->getComponent<Transform>();
-	t->position->z = -3.0f;
 
-	//Create scene
+	//create scene
 	scene_ptr scene = Scene::createScene();
-	scene->background_color = glm::vec4(0.8f, 0.8f, 0.8f, 1.0f);
+	scene->background_color = glm::vec4(0.0f);
 	scene->addObject(cube);
+	scene->addObject(camera);
+	scene->addLight(lightCube);
+    scene->currentCamera = camera;
 
-	//Load scene
+	//load scene
 	main->loadScene(scene);
 
 	Application::Main();
-	return 0;
 }
 ```
 
