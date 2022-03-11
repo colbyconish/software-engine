@@ -47,6 +47,7 @@ int main()
 ```
 
 <h1>Starter Example : default.vs</h1>
+
 ```cpp
 #version 330 core
 layout(location = 0) in vec3 aPos;
@@ -67,6 +68,7 @@ void main()
 }
 ```
 <h1>Starter Example : default.gs</h1>
+
 ```cpp
 #version 330 core
 layout (triangles) in;
@@ -99,6 +101,7 @@ void main()
 ```
 
 <h1>Starter Example : default.fs</h1>
+
 ```cpp
 #version 330 core
 struct Material
