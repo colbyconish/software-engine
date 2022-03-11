@@ -15,7 +15,7 @@
 
 <h1>Starter Example : main.cpp</h1>
 
-```cpp
+```glsl
 #include <SWE/swe.h>
 
 using namespace swe;
