@@ -52,11 +52,24 @@ namespace swe
             {
             case lightType::directional:
                 light = light_comp.get();
-                location = std::string("d_lights[" + d_lights) + "]";
+                location = std::string("d_lights[" + std::to_string(d_lights)) + "]";
                 currentShader.setDLight(location, (DirectionalLight*) light);
+                d_lights++;
                 break;  
+            case lightType::point:
+                light = light_comp.get();
+                location = std::string("p_lights[" + std::to_string(p_lights)) + "]";
+                currentShader.setPLight(location, (PointLight*)light);
+                p_lights++;
+                break;
+            case lightType::spot:
+                light = light_comp.get();
+                location = std::string("s_lights[" + std::to_string(s_lights)) + "]";
+                currentShader.setSLight(location, (SpotLight*)light);
+                s_lights++;
+                break;
             default:
-                Error("Light type not handled",errorLevel::Error, __SOURCELOCATION__);
+                Error err = Error("Light type not handled",errorLevel::Error, __SOURCELOCATION__);
             }
         }
 
@@ -75,6 +88,28 @@ namespace swe
             currentShader.setMat4("projection", glm::perspective(glm::radians(FOV), (float)windowSize.width / (float)windowSize.height, NEAR, FAR));
 
             model->render(&currentShader);
+        }
+
+        //debug code
+        lightShader.use();
+        for (object_ptr o : lights)
+        {
+            if (!(o->visible))
+                continue;
+
+            model_ptr model = o->getComponent<Model>();
+            if (model == nullptr)
+                continue;
+
+            light_ptr light = o->getComponent<Light>();
+
+            lightShader.setVec4("color", light->color->x, light->color->y, light->color->z, 0.0f);
+            lightShader.setMat4("model", o->getComponent<Transform>()->getModelMatrix());
+            lightShader.setMat4("view", currentCamera->getViewMatrix());
+            lightShader.setVec3("viewPos", *currentCamera->getComponent<Transform>()->position);
+            lightShader.setMat4("projection", glm::perspective(glm::radians(FOV), (float)windowSize.width / (float)windowSize.height, NEAR, FAR));
+
+            model->render(&lightShader);
         }
     }
 

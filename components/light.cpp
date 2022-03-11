@@ -20,8 +20,13 @@ namespace swe
 		delete specular;
 	}
 
-	DirectionalLight::DirectionalLight(glm::vec3 c, glm::vec3 d)
-		:Light(lightType::directional, c)
+	compType Light::getType() const
+	{
+		return compTypeFromTemplate<Light>{}.type;
+	}
+
+	DirectionalLight::DirectionalLight(glm::vec3 color, glm::vec3 d)
+		:Light(lightType::directional, color)
 	{
 		direction = new glm::vec3(d);
 	}
@@ -36,8 +41,29 @@ namespace swe
 		return light_ptr(new DirectionalLight(color, direction));
 	}
 
-	compType Light::getType() const
+	PointLight::PointLight(glm::vec3 color, float q, float l, float c)
+		:Light(lightType::point, color), quadratic(q), linear(l), constant(c) {}
+
+	PointLight::~PointLight() {}
+
+	light_ptr Light::createPoint(glm::vec3 color, float quadratic, float linear, float constant)
 	{
-		return compTypeFromTemplate<Light>{}.type;
+		return light_ptr(new PointLight(color, quadratic, linear, constant));
+	}
+
+	SpotLight::SpotLight(glm::vec3 c, glm::vec3 d, float i, float o)
+		:Light(lightType::spot, c), innerCutOff(i), outerCutOff(o)
+	{
+		direction = new glm::vec3(d);
+	}
+
+	SpotLight::~SpotLight()
+	{
+		delete direction;
+	}
+
+	light_ptr Light::createSpot(glm::vec3 color, glm::vec3 direction, float inner, float outer)
+	{
+		return light_ptr(new SpotLight(color, direction, inner, outer));
 	}
 }

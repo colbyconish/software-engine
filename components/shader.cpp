@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <SWE/Components/shader.h>
+#include <SWE/Components/transform.h>
 #include <SWE/Engine/error.h>
 
 #define VSPATH "shaders/default.vs"
@@ -204,9 +205,48 @@ namespace swe{
         {
             
             glUniform3f(glGetUniformLocation(ID, (name+".direction").c_str()), dl->direction->x, dl->direction->y, dl->direction->z);
+
             glUniform3f(glGetUniformLocation(ID, (name + ".ambient").c_str()), dl->ambient->x*dl->color->x, dl->ambient->y*dl->color->y, dl->ambient->z*dl->color->z);
             glUniform3f(glGetUniformLocation(ID, (name + ".diffuse").c_str()), dl->diffuse->x*dl->color->x, dl->diffuse->y*dl->color->y, dl->diffuse->z*dl->color->z);
             glUniform3f(glGetUniformLocation(ID, (name + ".specular").c_str()), dl->specular->x*dl->color->x, dl->specular->y*dl->color->y, dl->specular->z*dl->color->z);
+        }
+        else
+            Error err = Error("Can not change uniform of shader that is not active.", errorLevel::Error, __SOURCELOCATION__);
+    }
+
+    void Shader::setPLight(const std::string& name, PointLight* pl) const
+    {
+        if (isActive())
+        {
+            transform_ptr t = pl->parent->getComponent<Transform>();
+            glUniform3f(glGetUniformLocation(ID, (name + ".position").c_str()), t->position->x, t->position->y, t->position->z);
+
+            glUniform1f(glGetUniformLocation(ID, (name + ".quadratic").c_str()), pl->quadratic);
+            glUniform1f(glGetUniformLocation(ID, (name + ".linear").c_str()), pl->linear);
+            glUniform1f(glGetUniformLocation(ID, (name + ".constant").c_str()), pl->constant);
+
+            glUniform3f(glGetUniformLocation(ID, (name + ".ambient").c_str()), pl->ambient->x * pl->color->x, pl->ambient->y * pl->color->y, pl->ambient->z * pl->color->z);
+            glUniform3f(glGetUniformLocation(ID, (name + ".diffuse").c_str()), pl->diffuse->x * pl->color->x, pl->diffuse->y * pl->color->y, pl->diffuse->z * pl->color->z);
+            glUniform3f(glGetUniformLocation(ID, (name + ".specular").c_str()), pl->specular->x * pl->color->x, pl->specular->y * pl->color->y, pl->specular->z * pl->color->z);
+        }
+        else
+            Error err = Error("Can not change uniform of shader that is not active.", errorLevel::Error, __SOURCELOCATION__);
+    }
+
+    void Shader::setSLight(const std::string& name, SpotLight* sl) const
+    {
+        if (isActive())
+        {
+            transform_ptr t = sl->parent->getComponent<Transform>();
+            glUniform3f(glGetUniformLocation(ID, (name + ".position").c_str()), t->position->x, t->position->y, t->position->z);
+
+            glUniform1f(glGetUniformLocation(ID, (name + ".innerCutOff").c_str()), sl->innerCutOff);
+            glUniform1f(glGetUniformLocation(ID, (name + ".outerCutOff").c_str()), sl->outerCutOff);
+            glUniform3f(glGetUniformLocation(ID, (name + ".direction").c_str()), sl->direction->x, sl->direction->y, sl->direction->z);
+
+            glUniform3f(glGetUniformLocation(ID, (name + ".ambient").c_str()), sl->ambient->x * sl->color->x, sl->ambient->y * sl->color->y, sl->ambient->z * sl->color->z);
+            glUniform3f(glGetUniformLocation(ID, (name + ".diffuse").c_str()), sl->diffuse->x * sl->color->x, sl->diffuse->y * sl->color->y, sl->diffuse->z * sl->color->z);
+            glUniform3f(glGetUniformLocation(ID, (name + ".specular").c_str()), sl->specular->x * sl->color->x, sl->specular->y * sl->color->y, sl->specular->z * sl->color->z);
         }
         else
             Error err = Error("Can not change uniform of shader that is not active.", errorLevel::Error, __SOURCELOCATION__);

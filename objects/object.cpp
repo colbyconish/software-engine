@@ -36,6 +36,9 @@ namespace swe
     {
         for (auto c : components)
             c.second->update();
+
+        for (auto s : scripts)
+            s.second->update();
     }
 
     object_ptr Object::createObject()
@@ -114,13 +117,28 @@ namespace swe
         {
             Error err = Error("Passed in unusable component.", errorLevel::Error, __SOURCELOCATION__);
             return 0;
-        }   
+        }
 
-        auto it = components.find(type);
-        if (it == components.end())
+        uint32_t index;
+        std::map<uint32_t, component_ptr>* map;
+        if (type == compType::script)
         {
-            std::pair<compType, std::shared_ptr<Component>> pair(type, comp);
-            components.insert(pair);
+            Script* s = (Script*)comp.get();
+            map = &scripts;
+            index = s->ID;
+        }
+        else
+        {
+            map = &components;
+            index = (uint32_t)type;
+        }
+
+
+        auto it = map->find(index);
+        if (it == map->end())
+        {
+            std::pair<uint32_t, std::shared_ptr<Component>> pair(index, comp);
+            map->insert(pair);
 
             comp->parent = this;
             comp->init();

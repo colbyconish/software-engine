@@ -17,7 +17,11 @@ namespace swe
 			printf("%s (%s)\n", m.c_str(), func);
 			break;
 		case errorLevel::Warning:
+#ifdef SWE_SHOW_WARNINGS
 			printf("Warning in file %s on line %u.\n\t-> \"%s\"\n", file, line, m.c_str());
+#else
+			printf("Warnings supressed.%s", "\n");
+#endif
 			break;
 		case errorLevel::Error:
 			printf("Error in file %s on line %u.\n\t-> \"%s\"\n", file, line, m.c_str());

@@ -4,8 +4,10 @@
 
 namespace swe
 {
+	uint32_t Script::num_scripts = 0;
+
 	Script::Script(const char* fileLocation)
-		: Component(), onUpdate(-1), name(fileLocation) {	}
+		: Component(), onUpdate(-1), name(fileLocation), ID(num_scripts++) {	}
 
 	Script::~Script() 
 	{
