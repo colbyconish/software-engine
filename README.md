@@ -52,6 +52,7 @@ int main()
 	main->loadScene(scene);
 
 	Application::Main();
+	return 0;
 }
 ```
 <h2>default.vs</h2>
