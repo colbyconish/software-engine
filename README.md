@@ -47,7 +47,7 @@ int main()
 ```
 
 <h1>Starter Example : default.vs</h1>
-```glsl
+```c
 #version 330 core
 layout(location = 0) in vec3 aPos;
 layout(location = 1) in vec2 aTexCoord;
@@ -67,7 +67,7 @@ void main()
 }
 ```
 <h1>Starter Example : default.gs</h1>
-```glsl
+```c
 #version 330 core
 layout (triangles) in;
 layout (triangle_strip, max_vertices = 3) out;
@@ -99,7 +99,7 @@ void main()
 ```
 
 <h1>Starter Example : default.fs</h1>
-```glsl
+```c
 #version 330 core
 struct Material
 {
