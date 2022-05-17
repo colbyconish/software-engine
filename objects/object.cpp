@@ -113,7 +113,7 @@ namespace swe
     bool Object::addComponent(std::shared_ptr<Component> comp)
     {
         compType type = comp->getType();
-        if (type == compType::base)
+        if (type == compType::base || type == compType::null)
         {
             Error err = Error("Passed in unusable component.", errorLevel::Error, __SOURCELOCATION__);
             return 0;

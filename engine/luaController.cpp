@@ -10,6 +10,7 @@
 namespace swe
 {
 	lua_State *LuaController::ID = nullptr;
+	//const char* LuaController::magicFunctionFile = "./magicFunctions.lua";
 
 	LuaController::~LuaController()
 	{
@@ -209,6 +210,11 @@ namespace swe
 			lua_pushnumber(ls, result.get_value<float>());
 			return true;
 		}
+		if (result.is_type<bool>())
+		{
+			lua_pushboolean(ls, result.get_value<bool>());
+			return true;
+		}
 		else if (result.is_type<lua_CFunction>())
 		{
 			lua_pushcfunction(ls, result.get_value<lua_CFunction>());
@@ -362,8 +368,12 @@ namespace swe
 			return 0;
 			break;
 		case LUA_TBOOLEAN:
-			std::cout << "No support for boolean arguments." << std::endl;
-			return 0;
+			if (tryArgument<bool>(paramType, &(values[i]), &(args[i]), (bool)lua_toboolean(ls, i + lua_offset))) { return 1; }
+			else
+			{
+				std::cout << "Function used unsupported boolean type." << std::endl;
+				return 0;
+			}
 			break;
 		case LUA_TLIGHTUSERDATA:
 			std::cout << "No support for lightuserdata arguments." << std::endl;
@@ -463,6 +473,24 @@ namespace swe
 			lua_pushnil(ID);
 	}
 
+	int LuaController::getLuaFunction(std::string name)
+	{
+		int temp = -1;
+		lua_getglobal(ID, name.c_str());
+		if (lua_isfunction(ID, -1))
+			temp = luaL_ref(ID, LUA_REGISTRYINDEX);
+		lua_pop(ID, -1);
+		return temp;
+	}
+
+	void LuaController::callLuaFunction(std::string name)
+	{
+		lua_getglobal(ID, name.c_str());
+		if (lua_isfunction(ID, -1))
+			lua_call(ID, 0, 0);
+		lua_pop(ID, -1);
+	}
+
 	void LuaController::close()
 	{
 		if (checkInit())
@@ -533,6 +561,7 @@ namespace swe
 	//Object class
 	rttr::registration::class_<object_ptr>("object_ptr");
 	rttr::registration::class_<Object>("Object")
+		.property("visible", &Object::visible)
 		.method("new", &Object::createObject)
 		.method("print", &Object::print)
 		//.method("addComponent", &Object::addComponent)

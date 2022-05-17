@@ -1,6 +1,7 @@
 #include "pch.h"
 #include <SWE/Components/script.h>
 #include <SWE/Engine/luaController.h>
+#include <SWE/Engine/error.h>
 
 namespace swe
 {
@@ -26,9 +27,13 @@ namespace swe
 
 		LuaController::pushShared(temp);
 		LuaController::setGlobal("this");
+
 		LuaController::runFile(name);
+		getMagicFunctions();
+
 		LuaController::pushNil();
 		LuaController::setGlobal("this");
+		clearMagicFunctions();
 	}
 
 	compType Script::getType() const
@@ -42,5 +47,19 @@ namespace swe
 			return;
 		LuaController::pushRegistryIndex(onUpdate);
 		LuaController::callFunction();
+	}
+
+	void Script::getMagicFunctions()
+	{
+		LuaController::callLuaFunction("onInit");
+		onUpdate = LuaController::getLuaFunction("onUpdate");
+	}
+
+	void Script::clearMagicFunctions()
+	{
+		LuaController::pushNil();
+		LuaController::setGlobal("onInit");
+		LuaController::pushNil();
+		LuaController::setGlobal("onUpdate");
 	}
 }
