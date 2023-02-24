@@ -12,6 +12,8 @@ namespace swe
 
     void Component::update() {}
 
+    void Component::close() {}
+
     compType Component::getType() const
     {
         return compTypeFromTemplate<Component>{}.type;
@@ -28,5 +30,4 @@ namespace swe
         Error err = Error("compType string not supported.", errorLevel::Error, __SOURCELOCATION__);
         return compType::null;
     }
-
 } // namespace swe

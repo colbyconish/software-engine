@@ -7,6 +7,7 @@
 #ifndef PCH_H
 #define PCH_H
 #define swe_development
+//#define SWE_SHOW_WARNINGS
 
 // add headers that you want to pre-compile here
 #include "framework.h"

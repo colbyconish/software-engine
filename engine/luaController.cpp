@@ -10,6 +10,7 @@
 namespace swe
 {
 	lua_State *LuaController::ID = nullptr;
+	std::recursive_mutex LuaController::callLock = std::recursive_mutex();
 	//const char* LuaController::magicFunctionFile = "./magicFunctions.lua";
 
 	LuaController::~LuaController()
@@ -74,12 +75,12 @@ namespace swe
 		}
 	}
 
-	bool LuaController::checkInit()
+	inline bool LuaController::checkInit()
 	{
 		bool inited = ID != nullptr;
 
 		if (!inited)
-			Error err = Error("LuaController is not initialized.", errorLevel::Error, __SOURCELOCATION__);
+			Error err = Error("LuaController is not initialized.", errorLevel::Warning, __SOURCELOCATION__);
 
 		return inited;
 	}
@@ -442,11 +443,24 @@ namespace swe
 		return invokeLuaMethods(ls, method, instance);
 	}
 
-	void LuaController::callFunction()
+	int LuaController::callFunction(int numArgs)
 	{
-		if (checkInit())
-			if (lua_pcall(ID, 0, 0, 0) != 0)
+		if (!checkInit())
+			return -1;
+
+		if (lua_type(ID, -1-numArgs) != LUA_TFUNCTION)
+		{
+			Error err = Error("Tried running a non-function.", errorLevel::Error, __SOURCELOCATION__);
+			return -2;
+		}
+		else
+			if (lua_pcall(ID, numArgs, 0, 0) != 0)
+			{
 				Error err = Error("Error running function: " + std::string(lua_tostring(ID, -1)), errorLevel::Error, __SOURCELOCATION__);
+				return -3;
+			}
+
+		return 0;
 	}
 
 	void LuaController::setGlobal(std::string name)
@@ -475,6 +489,9 @@ namespace swe
 
 	int LuaController::getLuaFunction(std::string name)
 	{
+		if (!checkInit())
+			return -1;
+
 		int temp = -1;
 		lua_getglobal(ID, name.c_str());
 		if (lua_isfunction(ID, -1))
@@ -483,13 +500,25 @@ namespace swe
 		return temp;
 	}
 
-	void LuaController::callLuaFunction(std::string name)
+	void LuaController::callRegistryFunction(int regIndex)
 	{
-		lua_getglobal(ID, name.c_str());
-		if (lua_isfunction(ID, -1))
-			lua_call(ID, 0, 0);
-		lua_pop(ID, -1);
+		callLock.lock();
+		pushRegistryIndex(regIndex);
+		callFunction(0);
+		callLock.unlock();
 	}
+
+	void LuaController::callGlobalFunction(std::string name)
+	{
+		callLock.lock();
+		lua_getglobal(ID, name.c_str());
+		if (lua_type(ID, -1) == LUA_TFUNCTION)
+			callFunction(0);
+		else
+			Error("Tried calling non-function: " + name, errorLevel::Error, __SOURCELOCATION__);
+		callLock.unlock();
+	}
+
 
 	void LuaController::close()
 	{

@@ -30,7 +30,14 @@ namespace swe
         addComponent(std::shared_ptr<Transform>(new Transform()));
     }
 
-    Object::~Object() { }
+    Object::~Object() 
+    {
+        for (auto c : components)
+            c.second->parent = nullptr;
+
+        for (auto s : scripts)
+            s.second->parent = nullptr;
+    }
 
     void Object::update() 
     {
@@ -39,6 +46,15 @@ namespace swe
 
         for (auto s : scripts)
             s.second->update();
+    }
+
+    void Object::close()
+    {
+        for (auto c : components)
+            c.second->close();
+
+        for (auto s : scripts)
+            s.second->close();
     }
 
     object_ptr Object::createObject()
@@ -156,6 +172,13 @@ namespace swe
 
         comp->parent = this;
         return 0;
+    }
+
+    Window* Component::getWindow()
+    {
+        if (parent == nullptr)
+            return nullptr;
+        return parent->getWindow();
     }
 
 } // END namespace swe

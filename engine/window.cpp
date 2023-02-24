@@ -6,10 +6,10 @@
 
 namespace swe
 {
-    Window::Window(int width, int height, const char *title,
-                   GLFWmonitor *monitor, GLFWwindow *window,
-                   bool resizable, Menu menu)
-        : deltaTime(0.0f), lastFrame(0.0f), ID(nullptr), resize(Dimensions{-1,-1}), current_scene(nullptr)
+    Window::Window(int width, int height, const char* title,
+        GLFWmonitor* monitor, GLFWwindow* window,
+        bool resizable, Menu menu)
+        : deltaTime(0.0f), lastFrame(0.0f), ID(nullptr), resize(Dimensions{ -1,-1 }), current_scene(nullptr)/*, onInput(Event<Input>())*/
     {
         //setting window hints
         //GLFW_SCALE_TO_MONITOR
@@ -20,7 +20,7 @@ namespace swe
         resizable ? glfwWindowHint(GLFW_RESIZABLE, GL_TRUE) : glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
         ID = glfwCreateWindow(width, height, title, monitor, window);
-        
+
         if (ID == NULL)
         {
             std::cout << "Failed to create GLFW window" << std::endl;
@@ -33,6 +33,7 @@ namespace swe
         glfwSetWindowSizeCallback(ID, window_size_callback);
         glfwSetFramebufferSizeCallback(ID, framebuffer_size_callback);
         glfwSetMouseButtonCallback(ID, mouse_button_callback);
+        glfwSetKeyCallback(ID, key_callback);
 
 #ifdef _WIN64
         //SetWindowSubclass(getNativeID(), &Window::Subclassproc, (UINT_PTR) this, 0);
@@ -53,6 +54,7 @@ namespace swe
     Window::~Window()
     {
         if (graphics_thread.joinable()) graphics_thread.join();
+        current_scene->parent = nullptr;
         glfwDestroyWindow(ID);
     }
 
@@ -75,25 +77,25 @@ namespace swe
     {
         switch (attr)
         {
-            case windowAttr::lockedCursor:
-                glfwSetInputMode(ID, GLFW_CURSOR, set ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
-                break;
-            default:
-                std::cout << "No such attribute." << std::endl;
-                break;
+        case windowAttr::lockedCursor:
+            glfwSetInputMode(ID, GLFW_CURSOR, set ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+            break;
+        default:
+            std::cout << "No such attribute." << std::endl;
+            break;
         }
     }
 
-    void Window::setAttr(windowAttr attr, const char *set)
+    void Window::setAttr(windowAttr attr, const char* set)
     {
         switch (attr)
         {
-            case windowAttr::title:
-                glfwSetWindowTitle(ID, set);
-                break;
-            default:
-                std::cout << "No such attribute." << std::endl;
-                break;
+        case windowAttr::title:
+            glfwSetWindowTitle(ID, set);
+            break;
+        default:
+            std::cout << "No such attribute." << std::endl;
+            break;
         }
     }
 
@@ -121,8 +123,7 @@ namespace swe
 
     void Window::processInput()
     {
-        if (glfwGetKey(ID, GLFW_KEY_A) == GLFW_PRESS)
-            glfwSetWindowShouldClose(ID, GLFW_TRUE);
+        
     }
 
     inline void Window::swapBuffers()
@@ -165,10 +166,13 @@ namespace swe
     {
         win->makeCurrent();
         glfwSwapInterval(1);
-        Application::initGLAD(); 
+        Application::initGLAD();
 
         while (!win->shouldClose())
         {
+            while (win->isIconified())
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
             double start = glfwGetTime();
             if (win->resize.width > -1 || win->resize.height > -1)
                 glViewport(0, 0, win->resize.width, win->resize.height);
@@ -195,7 +199,10 @@ namespace swe
 
     void Window::loadScene(std::shared_ptr<Scene> scene)
     {
+        if (current_scene != nullptr)
+            current_scene->parent = nullptr;
         current_scene = scene;
+        scene->parent = this;
     }
 
     void Window::renderScene()
@@ -215,20 +222,48 @@ namespace swe
         current_scene->update();
     }
 
-    void Window::mouse_button_callback(GLFWwindow *window, int button, int action, int mods) 
+    void Window::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     {
-        
+        Window* win = Application::getWindow(window);
+        win->mouse_button_callback(button, action, mods);
     }
 
     void Window::window_size_callback(GLFWwindow* window, int width, int height)
     {
-        
+        Window* win = Application::getWindow(window);
+        win->window_size_callback(Dimensions{ width, height });
     }
 
     void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height)
     {
         Window* win = Application::getWindow(window);
-        win->resize = Dimensions{width, height};
+        win->framebuffer_size_callback(Dimensions{ width, height });
+    }
+
+    void Window::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+    {
+        Window* win = Application::getWindow(window);
+        win->key_callback(key, scancode, action, mods);
+    }
+
+    void Window::window_size_callback(Dimensions D)
+    {
+
+    }
+
+    void Window::mouse_button_callback(int button, int action, int mods)
+    {
+        onInput(Input{inputType::mouse, (bool)action, mods, button});
+    }
+
+    void Window::framebuffer_size_callback(Dimensions D)
+    {
+        resize = D;
+    }
+
+    void Window::key_callback(int key, int scancode, int action, int mods)
+    {
+        onInput(Input{inputType::key, (bool) action, mods, key});
     }
     //
     //Native Functions
@@ -285,12 +320,23 @@ namespace swe
         {
             int xPos = GET_X_LPARAM(lParam);
             int yPos = GET_Y_LPARAM(lParam);
-            int button = (uMsg == WM_LBUTTONDOWN ? GLFW_PRESS : GLFW_RELEASE);
+            int action = (uMsg == WM_LBUTTONDOWN ? GLFW_PRESS : GLFW_RELEASE);
 
-            mouse_button_callback(window->ID, GLFW_MOUSE_BUTTON_LEFT, button, 0x0);
+            mouse_button_callback(window->ID, GLFW_MOUSE_BUTTON_LEFT, action, 0x0);
             return 0;
         }
             break;
+        case WM_RBUTTONDOWN:
+        case WM_RBUTTONUP:
+        {
+            int xPos = GET_X_LPARAM(lParam);
+            int yPos = GET_Y_LPARAM(lParam);
+            int action = (uMsg == WM_RBUTTONDOWN ? GLFW_PRESS : GLFW_RELEASE);
+
+            mouse_button_callback(window->ID, GLFW_MOUSE_BUTTON_RIGHT, action, 0x0);
+            return 0;
+        }
+        break;
         default:
             return DefWindowProc(hWnd, uMsg, wParam, lParam);
         }          

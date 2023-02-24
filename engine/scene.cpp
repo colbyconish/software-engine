@@ -14,6 +14,15 @@ namespace swe
     Scene::Scene() :background_color(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)), currentShader(Shader::getDefaultShader()),
                     lightShader(Shader::getLightShader()), currentCamera(nullptr) {}
 
+    Scene::~Scene()
+    {
+        for (object_ptr o : objects)
+            o->parent = nullptr;
+
+        for (object_ptr o : lights)
+            o->parent = nullptr;
+    }
+
     scene_ptr Scene::createScene()
     {
         return scene_ptr(new Scene());
@@ -22,11 +31,13 @@ namespace swe
     void Scene::addObject(std::shared_ptr<Object> obj)
     {
         objects.push_back(obj);
+        obj->parent = this;
     }
 
     void Scene::addLight(std::shared_ptr<Object> obj)
     {
         lights.push_back(obj);
+        obj->parent = this;
     }
 
     void Scene::render(Dimensions windowSize)
@@ -121,4 +132,27 @@ namespace swe
         for (object_ptr o : lights)
             o->update();
     }
+
+    void Scene::close()
+    {
+        for (object_ptr o : objects)
+            o->close();
+
+        for (object_ptr o : lights)
+            o->close();
+    }
+
+    Window* Scene::getWindow()
+    {
+        return parent;
+    }
+
+    Window* Object::getWindow()
+    {
+        if (parent == nullptr)
+            return nullptr;
+        return parent->getWindow();
+    }
+
+    
 }

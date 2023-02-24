@@ -1,5 +1,6 @@
 #include "pch.h"
 #include <SWE/Engine/error.h>
+//#define SWE_SHOW_WARNINGS
 
 namespace swe
 {

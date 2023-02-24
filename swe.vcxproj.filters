@@ -78,6 +78,12 @@
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Components\light.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\utility.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\event.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">

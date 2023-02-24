@@ -17,39 +17,69 @@
 <h2>main.cpp</h2>
 
 ```cpp
-#include <SWE/swe.h>
+#include <SWE/SWE.h>
 
 using namespace swe;
 
-int main()
-{
+#ifdef _DEBUG
+int main(int argc, char *argv[]){
+#endif
+#ifndef _DEBUG
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow){
+#endif
+	
 	Application::Init();
+
+	//create window
 	window_ptr main = Application::createWindow(1000, 800, "Game Test", 0, 0, true);
-
 	main->makeCurrent();//glad needs a current context to init
+
 	Application::initGLAD();
-
-	//create objects
-	camera_ptr camera = Camera::createCamera();
-	transform_ptr t1 = camera->getComponent<Transform>();
-	t1->position->z = 12.5f;
-
-	object_ptr lightCube = Object::createPrimitive(primitiveType::Cube);
-	light_ptr light = Light::createSpot(glm::vec3(1.0f, 0.5f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), 0.0f, 15.0f);
-	lightCube->addComponent(light);
-
-	object_ptr cube = Object::createPrimitive(primitiveType::Cube);
 
 	//create scene
 	scene_ptr scene = Scene::createScene();
-	scene->background_color = glm::vec4(0.0f);
-	scene->addObject(cube);
+	main->loadScene(scene);
+
+	//create objects
+	camera_ptr camera = Camera::createCamera();
+	object_ptr lightCube = Object::createPrimitive(primitiveType::Cube);
+	object_ptr cube = Object::createPrimitive(primitiveType::Cube);
+	object_ptr plane = Object::createPrimitive(primitiveType::Cube);
+
+	//add objects to scene
 	scene->addObject(camera);
 	scene->addLight(lightCube);
-	scene->currentCamera = camera;
+	scene->addObject(cube);
+	scene->addObject(plane);
 
-	//load scene
-	main->loadScene(scene);
+	//create components
+	script_ptr controller = Script::createScript("scripts/playerController.lua");
+	script_ptr rainbow = Script::createScript("scripts/rainbow.lua");
+	//script_ptr circle = Script::createScript("scripts/circle.lua");
+	light_ptr light = Light::createDirectional(glm::vec3(1.0f, 1.0f, 1.0f));
+	//light_ptr light = Light::createSpot(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::cos(glm::radians(13.5f)), glm::cos(glm::radians(152.5f)));
+	//light_ptr light = Light::createPoint(glm::vec3(1.0f, 1.0f, 1.0f), 0.00014f, 0.002f, 1.0f);
+	script_ptr pulsate = Script::createScript("scripts/pulsate.lua");
+
+	//add components to objects
+	camera->addComponent(controller);
+	lightCube->addComponent(light);
+	//lightCube->addComponent(circle);
+	lightCube->addComponent(rainbow);
+	cube->addComponent(pulsate);
+	
+	//manipulate data
+	transform_ptr t1 = camera->getComponent<Transform>();
+	t1->position->z = 20.0f;
+	
+	transform_ptr t = plane->getComponent<Transform>();
+	t->scale->x = 100;
+	t->scale->z = 100;
+	t->scale->y = 0.1f;
+	t->position->y = -30;
+
+	scene->background_color = glm::vec4(0.25f);
+	scene->currentCamera = camera;
 
 	Application::Main();
 	return 0;

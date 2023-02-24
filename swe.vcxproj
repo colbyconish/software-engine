@@ -178,9 +178,11 @@
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Components\transform.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\application.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\error.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\event.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\luaController.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\menu.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\scene.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\utility.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\vector.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Engine\window.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Third Party Libraries\Include\SWE\Objects\camera.h" />
