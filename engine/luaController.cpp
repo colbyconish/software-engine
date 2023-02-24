@@ -143,11 +143,11 @@ namespace swe
 
 		std::string t = type.get_name().data();
 
-		//check if method exists with in=ndex name
+		//check if method exists with index name
 		rttr::method method = type.get_method(index);
 		if (!method.is_valid())
 		{
-			//check if property exists with in=ndex name
+			//check if property exists with index name
 			rttr::property prop = type.get_property(index);
 			if (!prop.is_valid())
 			{
@@ -179,6 +179,16 @@ namespace swe
 		lua_pushcclosure(ls, callIndexFunctions, 2);
 
 		return 1;
+	}
+
+	int LuaController::addExtraUserValues(lua_State* ls, rttr::type type, int idx)
+	{
+		if (rttr::type::get<script_ptr>() == type)
+		{
+			std::cout << "hell yeah" << std::endl;
+		}
+
+		return 0;
 	}
 
 	int LuaController::garbageCollection(lua_State *ls)
@@ -593,7 +603,8 @@ namespace swe
 		.method("new", &Object::createObject)
 		.method("print", &Object::print)
 		//.method("addComponent", &Object::addComponent)
-		.method("getComponent", &Object::luaGetComponent);
+		.method("getComponent", &Object::luaGetComponent)
+		.method("getScriptByName", &Object::getScriptByName);
 
 	//Scene class
 	rttr::registration::class_<scene_ptr>("scene_ptr");

@@ -2,7 +2,6 @@
 #include <SWE/Objects/object.h>
 #include <SWE/Components/transform.h>
 #include <SWE/Components/model.h>
-#include <SWE/Components/script.h>
 #include <SWE/Engine/error.h>
 
 namespace swe
@@ -124,6 +123,20 @@ namespace swe
         }
 
         return nullptr;
+    }
+
+    component_ptr Object::getScriptByName(const char* t) const
+    {
+        script_ptr script = nullptr;
+        std::string name = std::string(t);
+        for (auto component : scripts)
+        {
+            script_ptr temp = std::dynamic_pointer_cast<Script>(component.second);
+            if (temp->name == name)
+                script = temp;
+        }
+
+        return script;
     }
 
     bool Object::addComponent(std::shared_ptr<Component> comp)

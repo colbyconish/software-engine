@@ -19,7 +19,7 @@ namespace swe
 	};
 
 	Script::Script(const char* fileLocation)
-		: Component(), magicFunctions(std::map<std::string, int32_t>()) , name(fileLocation), ID(num_scripts++){ }
+		: Component(), magicFunctions(std::map<std::string, int32_t>()) , fileLocation(fileLocation), name(parseName(fileLocation)), ID(num_scripts++){ }
 
 	Script::~Script() 
 	{
@@ -30,13 +30,22 @@ namespace swe
 					LuaController::unrefRegistryIndex(func.second);
 		}
 
-		if (getWindow() != nullptr)
+		if(getWindow() != nullptr)
 			getWindow()->onInput.UNHOOK(&Script::onInput);
 	}
 
 	script_ptr Script::createScript(const char* fileLocation)
 	{
-		return script_ptr(new Script(fileLocation));
+		script_ptr temp = script_ptr(new Script(fileLocation));
+
+		LuaController::runFile(fileLocation);
+		for (std::string name : magicFunctionNames)
+		{
+			temp->magicFunctions[name] = LuaController::getLuaFunction(name);
+			LuaController::pushNil(), LuaController::setGlobal(name);
+		}
+
+		return temp;
 	}
 
 	void Script::init()
@@ -45,18 +54,10 @@ namespace swe
 
 		LuaController::pushShared(temp);
 		LuaController::setGlobal("this");
-
-		LuaController::runFile(name);
-		for (std::string name : magicFunctionNames)
-			magicFunctions[name] = LuaController::getLuaFunction(name);
 		if (magicFunctions["onInit"] != -1) LuaController::callRegistryFunction(magicFunctions["onInit"]);
-
 		LuaController::pushNil();
 		LuaController::setGlobal("this");
-		for (std::string name : magicFunctionNames)
-			LuaController::pushNil(), LuaController::setGlobal(name);
-
-		if (requiresInput())
+		if(requiresInput())
 			getWindow()->onInput.HOOK(&Script::onInput);
 	}
 
@@ -101,5 +102,15 @@ namespace swe
 		bool needsMouse = magicFunctions["onMousePressed"] != -1 || magicFunctions["onMouseReleased"] != -1;
 		
 		return needsMouse || needsKey;
+	}
+
+	std::string Script::parseName(std::string fileLocation)
+	{
+		int start = 0;
+		for (int i = fileLocation.length() - 1; i >= 0; i--)
+			if (fileLocation[i] == '/' || fileLocation[i] == '\\')
+				start = i;
+
+		return fileLocation.substr(start + 1);
 	}
 }
