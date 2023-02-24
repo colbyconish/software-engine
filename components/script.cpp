@@ -6,23 +6,28 @@
 
 namespace swe
 {
-	uint32_t Script::num_scripts = 0;
+	int32_t Script::num_scripts = 0;
+	const std::string Script::magicFunctionNames[] =
+	{
+		"onInit",
+		"onUpdate",
+		"onScrollWheel",
+		"onKeyPressed",
+		"onKeyReleased",
+		"onMousePressed",
+		"onMouseReleased"
+	};
 
 	Script::Script(const char* fileLocation)
-		: Component(), onUpdate(-1), name(fileLocation), ID(num_scripts++) { }
+		: Component(), magicFunctions(std::map<std::string, int32_t>()) , name(fileLocation), ID(num_scripts++){ }
 
 	Script::~Script() 
 	{
 		if (LuaController::checkInit())
 		{
-			if (onUpdate != -1)
-				LuaController::unrefRegistryIndex(onUpdate);
-			if (onKeyPressed != -1)
-				LuaController::unrefRegistryIndex(onKeyPressed);
-			if (onKeyReleased != -1)
-				LuaController::unrefRegistryIndex(onKeyReleased);
-			if (onInit != -1)
-				LuaController::unrefRegistryIndex(onInit);
+			for (auto func : magicFunctions)
+				if (func.second != -1)
+					LuaController::unrefRegistryIndex(func.second);
 		}
 
 		if (getWindow() != nullptr)
@@ -42,12 +47,14 @@ namespace swe
 		LuaController::setGlobal("this");
 
 		LuaController::runFile(name);
-		getMagicFunctions();
-		if (onInit != -1)LuaController::callRegistryFunction(onInit);
+		for (std::string name : magicFunctionNames)
+			magicFunctions[name] = LuaController::getLuaFunction(name);
+		if (magicFunctions["onInit"] != -1) LuaController::callRegistryFunction(magicFunctions["onInit"]);
 
 		LuaController::pushNil();
 		LuaController::setGlobal("this");
-		clearMagicFunctions();
+		for (std::string name : magicFunctionNames)
+			LuaController::pushNil(), LuaController::setGlobal(name);
 
 		if (requiresInput())
 			getWindow()->onInput.HOOK(&Script::onInput);
@@ -60,8 +67,8 @@ namespace swe
 
 	void Script::update() 
 	{
-		if (onUpdate == -1) return;
-		LuaController::callRegistryFunction(onUpdate);
+		if (magicFunctions["onUpdate"] == -1) return;
+		LuaController::callRegistryFunction(magicFunctions["onUpdate"]);
 	}
 
 	void Script::onInput(void* ptr, Input I)
@@ -70,36 +77,29 @@ namespace swe
 		switch (I.type)
 		{
 		case inputType::key:
-			if (I.pressed && script->onKeyPressed != -1)
-				LuaController::callRegistryFunction(script->onKeyPressed, I.button, 1);
-			else if (!I.pressed && script->onKeyReleased != -1)
-				LuaController::callRegistryFunction(script->onKeyReleased, I.button, 1);
+			if (I.data.d_data.pressed && script->magicFunctions["onKeyPressed"] != -1)
+				LuaController::callRegistryFunction(script->magicFunctions["onKeyPressed"], 1, I.data.d_data.button);
+			else if (!I.data.d_data.pressed && script->magicFunctions["onKeyReleased"] != -1)
+				LuaController::callRegistryFunction(script->magicFunctions["onKeyReleased"], 1, I.data.d_data.button);
+			break;
+		case inputType::mouse:
+			if (I.data.d_data.pressed && script->magicFunctions["onMousePressed"] != -1)
+				LuaController::callRegistryFunction(script->magicFunctions["onMousePressed"], 1, I.data.d_data.button);
+			else if (!I.data.d_data.pressed && script->magicFunctions["onMouseReleased"] != -1)
+				LuaController::callRegistryFunction(script->magicFunctions["onMouseReleased"], 1, I.data.d_data.button);
+			break;
+		case inputType::scroll:
+			if(script->magicFunctions["onScrollWheel"] != -1)
+				LuaController::callRegistryFunction(script->magicFunctions["onScrollWheel"], 2, I.data.a_data.xoffset, I.data.a_data.yoffset);
 			break;
 		}
 	}
 
 	bool Script::requiresInput()
 	{
-		return onKeyPressed != -1 || onKeyReleased != -1;
-	}
-
-	void Script::getMagicFunctions()
-	{
-		onUpdate = LuaController::getLuaFunction("onUpdate");
-		onKeyPressed = LuaController::getLuaFunction("onKeyPressed");
-		onKeyReleased = LuaController::getLuaFunction("onKeyReleased");
-		onInit = LuaController::getLuaFunction("onInit");
-	}
-
-	void Script::clearMagicFunctions()
-	{
-		LuaController::pushNil();
-		LuaController::setGlobal("onInit");
-		LuaController::pushNil();
-		LuaController::setGlobal("onUpdate");
-		LuaController::pushNil();
-		LuaController::setGlobal("onKeyPressed");
-		LuaController::pushNil();
-		LuaController::setGlobal("onKeyReleased");
+		bool needsKey = magicFunctions["onKeyPressed"] != -1 || magicFunctions["onKeyReleased"] != -1;
+		bool needsMouse = magicFunctions["onMousePressed"] != -1 || magicFunctions["onMouseReleased"] != -1;
+		
+		return needsMouse || needsKey;
 	}
 }

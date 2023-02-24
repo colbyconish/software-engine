@@ -243,7 +243,7 @@ namespace swe
 			}
 		}
 
-		std::cout << "Unhandled return type " << result.get_type().get_name().data() << "." << std::endl;
+		Error err = Error(std::string("Unhandled return type ") + result.get_type().get_name().data() + ".", errorLevel::Error, __SOURCELOCATION__);
 		return false;
 	}
 
@@ -584,8 +584,7 @@ namespace swe
 		.property("specular", &Light::specular);
 	rttr::registration::class_<script_ptr>("script_ptr");
 	rttr::registration::class_<Script>("Script")
-		.property("parent", &Script::parent)
-		.property("onUpdate", &Script::onUpdate);
+		.property("parent", &Script::parent);
 
 	//Object class
 	rttr::registration::class_<object_ptr>("object_ptr");

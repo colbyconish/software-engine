@@ -34,6 +34,7 @@ namespace swe
         glfwSetFramebufferSizeCallback(ID, framebuffer_size_callback);
         glfwSetMouseButtonCallback(ID, mouse_button_callback);
         glfwSetKeyCallback(ID, key_callback);
+        glfwSetScrollCallback(ID, scroll_callback);
 
 #ifdef _WIN64
         //SetWindowSubclass(getNativeID(), &Window::Subclassproc, (UINT_PTR) this, 0);
@@ -246,6 +247,12 @@ namespace swe
         win->key_callback(key, scancode, action, mods);
     }
 
+    void Window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+    {
+        Window* win = Application::getWindow(window);
+        win->scroll_callback(xoffset, yoffset);
+    }
+
     void Window::window_size_callback(Dimensions D)
     {
 
@@ -253,7 +260,9 @@ namespace swe
 
     void Window::mouse_button_callback(int button, int action, int mods)
     {
-        onInput(Input{inputType::mouse, (bool)action, mods, button});
+        Input I = Input{ inputType::mouse };
+        I.data.d_data = Digital{ (bool)action, mods, button };
+        onInput(I);
     }
 
     void Window::framebuffer_size_callback(Dimensions D)
@@ -263,7 +272,16 @@ namespace swe
 
     void Window::key_callback(int key, int scancode, int action, int mods)
     {
-        onInput(Input{inputType::key, (bool) action, mods, key});
+        Input I = Input{inputType::key};
+        I.data.d_data = Digital{(bool) action, mods, key};
+        onInput(I);
+    }
+
+    void Window::scroll_callback(double xoffset, double yoffset)
+    {
+        Input I = Input{ inputType::scroll };
+        I.data.a_data = Analog{xoffset, yoffset};
+        onInput(I);
     }
     //
     //Native Functions
